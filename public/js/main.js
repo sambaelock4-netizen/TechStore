@@ -58,11 +58,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
         const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
         
-        // Mettre à jour le badge du panier
-        const cartBadge = document.querySelector('.nav-item .badge');
-        if (cartBadge) {
-            cartBadge.textContent = cartCount;
-        }
+        // Mettre à jour le badge du panier (plusieurs sélecteurs pour compatibilité)
+        const cartBadges = document.querySelectorAll('.cart-badge, .nav-item .badge, .badge.bg-danger');
+        cartBadges.forEach(badge => {
+            badge.textContent = cartCount;
+        });
     }
     
     // Afficher un toast (message)
@@ -281,6 +281,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
 });
+
+// Exécuter au chargement de la page (au cas où DOMContentLoaded ne se déclenche pas)
+window.addEventListener('load', function() {
+    // Forcer la mise à jour du badge du panier
+    const cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
+    const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+    
+    // Mettre à jour tous les badges possibles
+    const selectors = ['.cart-badge', '.nav-item .badge', '.badge.bg-danger', '[class*="cart-badge"]'];
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(badge => {
+            badge.textContent = cartCount;
+        });
+    });
+});
+
+function updateCartBadge() {
+    const cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
+    const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+    
+    // Mettre à jour tous les badges possibles
+    const selectors = ['.cart-badge', '.nav-item .badge', '.badge.bg-danger', '[class*="cart-badge"]'];
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(badge => {
+            badge.textContent = cartCount;
+        });
+    });
+}
 
 /**
  * Fonction globale pour ajouter au panier

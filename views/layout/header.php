@@ -112,7 +112,7 @@
                     <li class="nav-item me-3">
                         <a href="<?= BASE_URL ?>/cart" class="nav-link position-relative">
                             <i class="bi bi-cart3 fs-4"></i>
-                            <span class="position-absolute cart-badge badge rounded-pill bg-danger">0</span>
+                            <span class="position-absolute badge rounded-pill bg-danger cart-badge">0</span>
                         </a>
                     </li>
 
