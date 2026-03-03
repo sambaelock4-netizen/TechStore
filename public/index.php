@@ -20,6 +20,7 @@ $url = explode('/', $url);
 // Routing - Mapper les URLs vers les contrôleurs
 $page = isset($url[0]) ? $url[0] : 'home';
 $action = isset($url[1]) ? $url[1] : 'index';
+$id = isset($url[1]) ? intval($url[1]) : null;
 
 // Tableau des pages valides
 $valid_pages = ['home', 'catalogue', 'product', 'cart', 'login', 'register', 'account', 'orders', 'search', 'admin', 'logout', 'checkout'];

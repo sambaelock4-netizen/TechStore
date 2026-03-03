@@ -38,3 +38,14 @@ define('ERROR_500', 'Erreur serveur');
 // Formats de date
 define('DATE_FORMAT', 'd/m/Y');
 define('DATETIME_FORMAT', 'd/m/Y à H:i');
+
+// Conversion EUR to CFA (XOF)
+define('EUR_TO_CFA', 655.957);
+
+/**
+ * Fonction pour afficher le prix en CFA
+ */
+function displayPrice($price_eur) {
+    $price_cfa = $price_eur * EUR_TO_CFA;
+    return number_format($price_cfa, 0, ',', ' ') . ' CFA';
+}

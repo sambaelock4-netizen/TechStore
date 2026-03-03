@@ -2,6 +2,15 @@
  * TECHSTORE - JavaScript principal
  */
 
+// Conversion EUR to CFA
+const EUR_TO_CFA = 655.957;
+
+// Fonction pour afficher le prix en CFA
+function displayPriceCFA(priceEur) {
+    const priceCFA = priceEur * EUR_TO_CFA;
+    return priceCFA.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' CFA';
+}
+
 // Attendre que le DOM soit chargé
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -238,11 +247,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalElement = document.getElementById('cart-total');
         
         if (subtotalElement) {
-            subtotalElement.textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
+            subtotalElement.textContent = displayPriceCFA(subtotal);
         }
         
         if (totalElement) {
-            totalElement.textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
+            totalElement.textContent = displayPriceCFA(subtotal);
         }
     }
     

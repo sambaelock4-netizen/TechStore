@@ -31,7 +31,7 @@ try {
         <div class="carousel-item active" style="background: linear-gradient(to right, rgba(0,0,0,0.85) 50%, transparent), url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80') center/cover; min-height: 500px;">
             <div class="container h-100 d-flex align-items-center carousel-item-content">
                 <div class="col-md-7 text-white">
-                    <span class="badge bg-primary mb-3 px-3 py-2 rounded-pill animate__animated animate__fadeInDown">🚀 NOUVEAUTÉ</span>
+                    <span class="badge bg-primary mb-3 px-3 py-2 rounded-pill animate__animated animate__fadeInDown"> 🆕 NOUVEAUTÉ</span>
                     <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInLeft">L'Excellence <br><span class="text-warning">Informatique</span></h1>
                     <p class="lead fs-4 mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Découvrez notre collection exclusive d'équipements haute performance.</p>
                     <div class="d-flex gap-3 animate__animated animate__fadeInUp animate__delay-2s">
@@ -50,10 +50,10 @@ try {
         <div class="carousel-item" style="background: linear-gradient(to right, rgba(0,0,0,0.85) 50%, transparent), url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1920&q=80') center/cover; min-height: 500px;">
             <div class="container h-100 d-flex align-items-center carousel-item-content">
                 <div class="col-md-7 text-white">
-                    <span class="badge bg-danger mb-3 px-3 py-2 rounded-pill animate__animated animate__fadeInDown">🔥 PROMO</span>
-                    <h2 class="display-3 fw-bold mb-3 animate__animated animate__fadeInLeft">Hasta la <span class="text-warning">Vista</span></h2>
-                    <p class="lead fs-4 mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Profitez de offres exceptionnelles sur toute notre gamme.</p>
-                    <div class="d-flex gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+                    <span class="badge bg-danger mb-3 px-3 py-2 rounded-pill">🔥 PROMO</span>
+                    <h2 class="display-3 fw-bold mb-3">Hasta la <span class="text-warning">Vista</span></h2>
+                    <p class="lead fs-4 mb-4">Profitez de offres exceptionnelles sur toute notre gamme.</p>
+                    <div class="d-flex gap-3">
                         <a href="<?= BASE_URL ?>/catalogue" class="btn btn-warning btn-md fw-bold px-3 py-2 shadow">
                             <i class="bi bi-tag me-2"></i> Découvrir les Offres
                         </a>
@@ -62,16 +62,16 @@ try {
             </div>
         </div>
 
-        <!-- Slide 3 - GARANTIE -->
+        <!-- Slide 3 - SUPPORT -->
         <div class="carousel-item" style="background: linear-gradient(to right, rgba(0,0,0,0.85) 50%, transparent), url('https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=1920&q=80') center/cover; min-height: 500px;">
             <div class="container h-100 d-flex align-items-center carousel-item-content">
                 <div class="col-md-7 text-white">
-                    <span class="badge bg-success mb-3 px-3 py-2 rounded-pill animate__animated animate__fadeInDown">🛡️ GARANTIE</span>
-                    <h2 class="display-3 fw-bold mb-3 animate__animated animate__fadeInLeft">Qualité <span class="text-warning">Assurée</span></h2>
-                    <p class="lead fs-4 mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Tous nos produits sont garantis et certifiés pour votre tranquilité.</p>
-                    <div class="d-flex gap-3 animate__animated animate__fadeInUp animate__delay-2s">
-                        <a href="<?= BASE_URL ?>/catalogue" class="btn btn-success btn-md fw-bold px-3 py-2 shadow">
-                            <i class="bi bi-shield-check me-2"></i> En savoir plus
+                    <span class="badge bg-success mb-3 px-3 py-2 rounded-pill">🎧 SUPPORT</span>
+                    <h2 class="display-3 fw-bold mb-3">Support Client <span class="text-warning">24/7</span></h2>
+                    <p class="lead fs-4 mb-4">Notre équipe est disponible pour vous accompagner.</p>
+                    <div class="d-flex gap-3">
+                        <a href="<?= BASE_URL ?>/contact" class="btn btn-success btn-md fw-bold px-3 py-2 shadow">
+                            <i class="bi bi-chat-dots me-2"></i> Nous contacter
                         </a>
                     </div>
                 </div>
@@ -82,10 +82,10 @@ try {
         <div class="carousel-item" style="background: linear-gradient(to right, rgba(0,0,0,0.85) 50%, transparent), url('https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1920&q=80') center/cover; min-height: 500px;">
             <div class="container h-100 d-flex align-items-center carousel-item-content">
                 <div class="col-md-7 text-white">
-                    <span class="badge bg-info mb-3 px-3 py-2 rounded-pill animate__animated animate__fadeInDown">🚚 LIVRAISON</span>
-                    <h2 class="display-3 fw-bold mb-3 animate__animated animate__fadeInLeft">Livraison <span class="text-warning">Gratuite</span></h2>
-                    <p class="lead fs-4 mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Livraison gratuite dès 50€ d'achat. Recevez vos produits en 24-48h.</p>
-                    <div class="d-flex gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+                    <span class="badge bg-info mb-3 px-3 py-2 rounded-pill">🚚 LIVRAISON</span>
+                    <h2 class="display-3 fw-bold mb-3">Livraison <span class="text-warning">Gratuite</span></h2>
+                    <p class="lead fs-4 mb-4">Livraison gratuite dès 50000 d'achat. Recevez vos produits en 24-48h.</p>
+                    <div class="d-flex gap-3">
                         <a href="<?= BASE_URL ?>/catalogue" class="btn btn-info btn-md fw-bold px-3 py-2 shadow">
                             <i class="bi bi-truck me-2"></i> Commander maintenant
                         </a>

@@ -95,7 +95,9 @@ try {
                             
                             <div class="product-image-wrapper">
                                 <?php if (!empty($product['image'])): ?>
-                                    <img src="<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
+                                    <a href="<?= BASE_URL ?>/product/<?= $product['id'] ?>">
+                                        <img src="<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
+                                    </a>
                                 <?php else: ?>
                                     <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
                                         <i class="bi bi-image text-muted fs-1"></i>
@@ -104,9 +106,11 @@ try {
                             </div>
                             
                             <div class="card-body d-flex flex-column">
-                                <span class="text-muted small mb-1"><?= htmlspecialchars($product['category_name'] ?? 'Non catégorisé') ?></span>
-                                <h5 class="card-title mb-2"><?= htmlspecialchars($product['name']) ?></h5>
-                                <p class="card-text text-muted small flex-grow-1"><?= substr(htmlspecialchars($product['description'] ?? ''), 0, 80) ?>...</p>
+                                <a href="<?= BASE_URL ?>/product/<?= $product['id'] ?>" class="text-decoration-none">
+                                    <span class="text-muted small mb-1 d-block"><?= htmlspecialchars($product['category_name'] ?? 'Non catégorisé') ?></span>
+                                    <h5 class="card-title mb-2 text-dark"><?= htmlspecialchars($product['name']) ?></h5>
+                                    <p class="card-text text-muted small flex-grow-1"><?= substr(htmlspecialchars($product['description'] ?? ''), 0, 80) ?>...</p>
+                                </a>
                                 
                                 <div class="mb-2">
                                     <?php if ($product['stock'] > 0 && $product['stock'] <= 5): ?>
@@ -121,19 +125,24 @@ try {
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
                                     <span class="h5 text-primary mb-0"><?= number_format($product['price'], 2, ',', ' ') ?> €</span>
                                     
-                                    <?php if ($product['stock'] > 0): ?>
-                                        <button class="btn btn-primary btn-sm add-to-cart" 
-                                                data-id="<?= $product['id'] ?>"
-                                                data-name="<?= htmlspecialchars($product['name']) ?>"
-                                                data-price="<?= $product['price'] ?>"
-                                                data-stock="<?= $product['stock'] ?>">
-                                            <i class="bi bi-cart-plus me-1"></i> Ajouter
-                                        </button>
-                                    <?php else: ?>
-                                        <button class="btn btn-secondary btn-sm" disabled>
-                                            <i class="bi bi-cart-x me-1"></i> Indisponible
-                                        </button>
-                                    <?php endif; ?>
+                                    <div class="d-flex gap-2">
+                                        <a href="<?= BASE_URL ?>/product/<?= $product['id'] ?>" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye me-1"></i>
+                                        </a>
+                                        <?php if ($product['stock'] > 0): ?>
+                                            <button class="btn btn-primary btn-sm add-to-cart" 
+                                                    data-id="<?= $product['id'] ?>"
+                                                    data-name="<?= htmlspecialchars($product['name']) ?>"
+                                                    data-price="<?= $product['price'] ?>"
+                                                    data-stock="<?= $product['stock'] ?>">
+                                                <i class="bi bi-cart-plus me-1"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="bi bi-cart-x me-1"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -173,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var currentQty = existingItem ? existingItem.quantity : 0;
         
         if (currentQty >= stock) {
-            alert('Stock insuffisant! Il ne reste que ' + stock + ' exemplaires de ce produit.');
+            showToast('Stock insuffisant! Il ne reste que ' + stock + ' exemplaire(s).', 'error');
             return;
         }
         
@@ -190,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         localStorage.setItem('techstore_cart', JSON.stringify(cart));
         updateCartBadge();
-        alert(name + ' a été ajouté au panier!');
+        showToast(name + ' a été ajouté au panier!', 'success');
     }
     
     function updateCartBadge() {
@@ -203,6 +212,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (badge) {
             badge.textContent = count;
         }
+    }
+    
+    function showToast(message, type) {
+        var toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        
+        var icon = type === 'success' ? 'bi-check-circle text-success' : 'bi-exclamation-circle text-danger';
+        
+        toast.innerHTML = '<i class="bi ' + icon + ' me-2"></i>' + message;
+        
+        if (!document.getElementById('toast-styles')) {
+            var styles = document.createElement('style');
+            styles.id = 'toast-styles';
+            styles.textContent = '.toast-notification{position:fixed;bottom:20px;right:20px;background:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9999;animation:slideIn .3s ease}@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+            document.head.appendChild(styles);
+        }
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(function() {
+            toast.remove();
+        }, 3000);
     }
 });
 </script>
@@ -233,5 +264,10 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.product-image-wrapper a:hover img {
+    transform: scale(1.05);
 }
 </style>

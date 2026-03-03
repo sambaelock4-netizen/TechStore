@@ -182,24 +182,24 @@ body {
     padding: 4rem 0;
 }
 
+.newsletter-section form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 10px;
+}
+
 .newsletter-section .form-control {
-    height: auto;
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
     padding: 0.75rem 1rem;
 }
 
-.newsletter-section .btn {
+.newsletter-section .btn-warning {
     white-space: nowrap;
-    height: auto;
     padding: 0.75rem 1.5rem;
-}
-
-.newsletter-section form {
-    align-items: center;
-}
-
-.newsletter-section form .form-control,
-.newsletter-section form .btn {
-    margin: 0;
 }
 
 /* Cards */

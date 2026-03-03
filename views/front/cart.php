@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCart();
         updateCartBadge();
         saveCartForUser();
-        alert('Produit supprimé du panier');
+        showToast('Produit supprimé du panier', 'success');
     }
     
     function updateCartBadge() {
@@ -304,8 +304,33 @@ document.addEventListener('DOMContentLoaded', function() {
 function clearCart() {
     if (confirm('Êtes-vous sûr de vouloir vider votre panier?')) {
         localStorage.removeItem('techstore_cart');
-        location.reload();
+        showToast('Panier vidé avec succès', 'success');
+        setTimeout(function() {
+            location.reload();
+        }, 1000);
     }
+}
+
+function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    
+    var icon = type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger';
+    
+    toast.innerHTML = '<i class="fas ' + icon + ' me-2"></i>' + message;
+    
+    if (!document.getElementById('toast-styles')) {
+        var styles = document.createElement('style');
+        styles.id = 'toast-styles';
+        styles.textContent = '.toast-notification{position:fixed;bottom:20px;right:20px;background:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9999;animation:slideIn .3s ease}@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+        document.head.appendChild(styles);
+    }
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        toast.remove();
+    }, 3000);
 }
 </script>
 
