@@ -21,11 +21,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['firstname'] . ' ' . $user['lastname'];
                 $_SESSION['user_email'] = $user['email'];
-                $_SESSION['role'] = $user['role'] ?? 'client';
+                $_SESSION['user_role'] = $user['role'] ?? 'client';
                 
-                // Redirection vers la page précédente ou le compte
-                $redirect = $_GET['redirect'] ?? BASE_URL . '/account';
-                header('Location: ' . $redirect);
+                // Redirection vers la page précédente ou selon le rôle
+                $redirect = $_GET['redirect'] ?? '';
+                
+                if ($redirect === 'admin') {
+                    // Redirection vers le back office
+                    header('Location: ' . BASE_URL . '/admin');
+                } elseif (in_array($user['role'], ['admin', 'super_admin', 'product_manager', 'order_manager'])) {
+                    // Redirection vers le back office pour les admins
+                    header('Location: ' . BASE_URL . '/admin');
+                } else {
+                    // Redirection vers le compte pour les clients
+                    header('Location: ' . BASE_URL . '/account');
+                }
                 exit;
             } else {
                 $error = 'Email ou mot de passe incorrect';

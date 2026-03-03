@@ -83,8 +83,87 @@ switch ($page) {
         break;
         
     case 'admin':
-        $title = 'Administration - TechStore';
-        $view = VIEW_PATH . '/back/dashboard.php';
+        // Charger le contrôleur Admin
+        require_once APP_PATH . '/Controllers/AdminController.php';
+        
+        $adminController = new AdminController($pdo);
+        
+        // Router les actions admin
+        $adminAction = isset($url[1]) ? $url[1] : 'index';
+        $adminId = isset($url[2]) ? intval($url[2]) : null;
+        
+        switch ($adminAction) {
+            case '':
+            case 'index':
+                $adminController->index();
+                break;
+            case 'dashboard':
+                $adminController->index();
+                break;
+            case 'products':
+                $adminController->products();
+                break;
+            case 'product':
+                $subAction = isset($url[2]) ? $url[2] : 'index';
+                if ($subAction === 'add') {
+                    $adminController->addProduct();
+                } elseif ($subAction === 'edit' && $adminId) {
+                    $adminController->editProduct($adminId);
+                } elseif ($subAction === 'delete' && $adminId) {
+                    $adminController->deleteProduct($adminId);
+                } else {
+                    $adminController->products();
+                }
+                break;
+            case 'orders':
+                $subAction = isset($url[2]) ? $url[2] : 'index';
+                if (is_numeric($subAction)) {
+                    $adminController->viewOrder(intval($subAction));
+                } elseif ($subAction === 'view' && $adminId) {
+                    $adminController->viewOrder($adminId);
+                } elseif ($subAction === 'update' && $adminId) {
+                    $adminController->updateOrderStatus($adminId);
+                } else {
+                    $adminController->orders();
+                }
+                break;
+            case 'users':
+                $subAction = isset($url[2]) ? $url[2] : 'index';
+                if ($subAction === 'add') {
+                    $adminController->addUser();
+                } elseif ($subAction === 'edit' && $adminId) {
+                    $adminController->editUser($adminId);
+                } elseif ($subAction === 'delete' && $adminId) {
+                    $adminController->deleteUser($adminId);
+                } elseif ($subAction === 'reset' && $adminId) {
+                    $adminController->resetUserPassword($adminId);
+                } else {
+                    $adminController->users();
+                }
+                break;
+            case 'categories':
+                $subAction = isset($url[2]) ? $url[2] : 'index';
+                if ($subAction === 'add') {
+                    $adminController->addCategory();
+                } elseif ($subAction === 'edit' && $adminId) {
+                    $adminController->editCategory($adminId);
+                } elseif ($subAction === 'delete' && $adminId) {
+                    $adminController->deleteCategory($adminId);
+                } else {
+                    $adminController->categories();
+                }
+                break;
+            case 'logs':
+                $adminController->logs();
+                break;
+            case 'profile':
+                $adminController->profile();
+                break;
+            default:
+                $adminController->index();
+                break;
+        }
+        exit;
         break;
         
     case 'logout':
