@@ -95,8 +95,15 @@ try {
                             
                             <div class="product-image-wrapper">
                                 <?php if (!empty($product['image'])): ?>
+                                    <?php 
+                                    // Vérifier si c'est une URL externe ou locale
+                                    $imgSrc = $product['image'];
+                                    if (strpos($imgSrc, 'http') !== 0) {
+                                        $imgSrc = UPLOAD_URL . '/' . $imgSrc;
+                                    }
+                                    ?>
                                     <a href="<?= BASE_URL ?>/product/<?= $product['id'] ?>">
-                                        <img src="<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
+                                        <img src="<?= htmlspecialchars($imgSrc) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
                                     </a>
                                 <?php else: ?>
                                     <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
@@ -123,7 +130,7 @@ try {
                                 </div>
                                 
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <span class="h5 text-primary mb-0"><?= number_format($product['price'], 2, ',', ' ') ?> €</span>
+                                    <span class="h5 text-primary mb-0"><?= displayPrice($product['price']) ?></span>
                                     
                                     <div class="d-flex gap-2">
                                         <a href="<?= BASE_URL ?>/product/<?= $product['id'] ?>" class="btn btn-outline-primary btn-sm">
@@ -242,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .catalogue-page {
     background-color: #f8f9fa;
     min-height: calc(100vh - 76px);
+    padding: 1rem !important;
 }
 
 .product-card {
@@ -256,8 +264,12 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .product-image-wrapper {
-    height: 200px;
+    height: 150px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
 }
 
 .product-image-wrapper img {
@@ -269,5 +281,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .product-image-wrapper a:hover img {
     transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .catalogue-page {
+        padding: 0.5rem !important;
+    }
+    
+    .catalogue-page h1 {
+        font-size: 1.5rem;
+    }
+    
+    .category-filters .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .product-image-wrapper {
+        height: 120px;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .card-title {
+        font-size: 0.9rem !important;
+    }
+    
+    .product-card .card-body .text-muted {
+        display: none;
+    }
+    
+    .h5, h5 {
+        font-size: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
 }
 </style>

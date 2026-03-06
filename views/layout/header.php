@@ -25,8 +25,40 @@
 
         /* Barre de recherche elegante */
         .search-group { width: 350px; }
-        .search-input { border-radius: 20px 0 0 20px; border: none; }
-        .search-btn { border-radius: 0 20px 20px 0; background: var(--primary-tech); border: none; }
+        .search-group .form-control { border-radius: 20px 0 0 20px; border: none; }
+        .search-group .btn { border-radius: 0 20px 20px 0; }
+        
+        /* Mobile navbar adjustments */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: var(--dark-tech);
+                padding: 1rem;
+                border-radius: 0 0 8px 8px;
+                margin-top: 0.5rem;
+            }
+            
+            .search-group {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+            
+            .search-group .form-control {
+                border-radius: 20px 0 0 20px;
+            }
+            
+            .search-group .btn {
+                border-radius: 0 20px 20px 0;
+            }
+            
+            .nav-link {
+                padding: 0.75rem 0 !important;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .nav-item.me-3 {
+                margin: 1rem 0 !important;
+            }
+        }
 
         /* Effets Boutons */
         .btn-tech { 
@@ -112,18 +144,18 @@
                     <li class="nav-item me-3">
                         <a href="<?= BASE_URL ?>/cart" class="nav-link position-relative">
                             <i class="bi bi-cart3 fs-4"></i>
-                            <span class="position-absolute badge rounded-pill bg-danger cart-badge">0</span>
+                            <span class="position-absolute badge rounded-pill bg-danger cart-badge" id="headerCartCount">0</span>
                         </a>
                     </li>
 
-                    <?php if(isset($_SESSION['user_id'])): ?>
+                    <?php if(isset($_SESSION['user'])): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle btn btn-outline-primary btn-tech text-white px-4" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i> Mon Profil
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/account">Tableau de bord</a></li>
-                                <?php if($_SESSION['role'] == 'admin'): ?>
+                                <?php if($_SESSION['user']['role'] == 'admin' || $_SESSION['user']['role'] == 'super_admin'): ?>
                                     <li><a class="dropdown-item text-primary fw-bold" href="<?= BASE_URL ?>/admin">Back Office</a></li>
                                 <?php endif; ?>
                                 <li><hr class="dropdown-divider"></li>
@@ -149,5 +181,29 @@
         </div>
     </nav>
 </header>
+
+<script>
+    // Update cart count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCount();
+    });
+
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
+        const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+        
+        // Update header cart badge
+        const headerCartBadge = document.getElementById('headerCartCount');
+        if (headerCartBadge) {
+            headerCartBadge.textContent = totalItems;
+        }
+        
+        // Update promo cart badge in home page carousel
+        const promoCartBadge = document.getElementById('promoCartBadge');
+        if (promoCartBadge) {
+            promoCartBadge.textContent = '🛒 Panier (' + totalItems + ')';
+        }
+    }
+</script>
 
 <main>

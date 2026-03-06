@@ -88,7 +88,7 @@ function getOrderDetails($pdo, $order_id) {
                                             <?= $status_labels[$order['status']] ?? $order['status'] ?>
                                         </span>
                                         <span class="fw-bold text-primary">
-                                            <?= number_format($order['total_amount'], 2, ',', ' ') ?> €
+                                            <?= number_format($order['total_amount'], 2, ',', ' ') ?> FC
                                         </span>
                                     </div>
                                 </div>
@@ -111,7 +111,7 @@ function getOrderDetails($pdo, $order_id) {
                                                 <div class="flex-grow-1">
                                                     <p class="mb-0 fw-medium"><?= htmlspecialchars($item['product_name']) ?></p>
                                                     <p class="mb-0 text-muted small">
-                                                        <?= $item['quantity'] ?> x <?= number_format($item['unit_price'], 2, ',', ' ') ?> €
+                                                        <?= $item['quantity'] ?> x <?= number_format($item['unit_price'], 2, ',', ' ') ?> FC
                                                     </p>
                                                 </div>
                                             </div>

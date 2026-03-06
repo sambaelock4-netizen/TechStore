@@ -49,9 +49,13 @@ $product_images = [];
 if (!empty($product['images'])) {
     $product_images = json_decode($product['images'], true);
 }
-// Ajouter l'image principale
+// Ajouter l'image principale avec gestion URL locale/externe
 if (!empty($product['image'])) {
-    array_unshift($product_images, $product['image']);
+    $mainImg = $product['image'];
+    if (strpos($mainImg, 'http') !== 0) {
+        $mainImg = UPLOAD_URL . '/' . $mainImg;
+    }
+    array_unshift($product_images, $mainImg);
 }
 // Images par défaut si aucune image
 if (empty($product_images)) {
@@ -60,6 +64,13 @@ if (empty($product_images)) {
         'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=800&q=80',
         'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=800&q=80'
     ];
+}
+
+// Fonction helper pour convertir les URLs d'images locales en URLs complètes
+function getImageUrl($imgPath) {
+    if (empty($imgPath)) return $imgPath;
+    if (strpos($imgPath, 'http') === 0) return $imgPath;
+    return UPLOAD_URL . '/' . $imgPath;
 }
 ?>
 
@@ -125,7 +136,7 @@ if (empty($product_images)) {
                     
                     <!-- Price -->
                     <div class="product-price mb-4">
-                        <span class="current-price"><?= number_format($product['price'], 2, ',', ' ') ?> €</span>
+                        <span class="current-price"><?= displayPrice($product['price']) ?></span>
                     </div>
                     
                     <!-- Stock Status -->
@@ -189,7 +200,7 @@ if (empty($product_images)) {
                             <i class="bi bi-truck feature-icon"></i>
                             <div>
                                 <strong>Livraison gratuite</strong>
-                                <small class="d-block text-muted"> dès 50€ d'achat</small>
+                                <small class="d-block text-muted"> dès 50000 FC d'achat</small>
                             </div>
                         </div>
                         <div class="feature-item">
@@ -254,7 +265,7 @@ if (empty($product_images)) {
                                     </tr>
                                     <tr>
                                         <th>Prix</th>
-                                        <td><?= number_format($product['price'], 2, ',', ' ') ?> €</td>
+                                        <td><?= number_format($product['price'], 2, ',', ' ') ?> FC</td>
                                     </tr>
                                     <tr>
                                         <th>Disponibilité</th>
@@ -282,7 +293,7 @@ if (empty($product_images)) {
                 <?php foreach ($similar_products as $simProduct): ?>
                 <div class="col-md-6 col-lg-3">
                     <div class="card product-card h-100">
-                        <img src="<?= htmlspecialchars($simProduct['image'] ?: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80') ?>" 
+                        <img src="<?= htmlspecialchars(!empty($simProduct['image']) ? getImageUrl($simProduct['image']) : 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80') ?>"
                             class="card-img-top" 
                             alt="<?= htmlspecialchars($simProduct['name']) ?>">
                         <div class="card-body">
@@ -291,7 +302,7 @@ if (empty($product_images)) {
                                 <?= htmlspecialchars($simProduct['short_description'] ?? '') ?>
                             </p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="price"><?= number_format($simProduct['price'], 2, ',', ' ') ?> €</span>
+                                <span class="price"><?= displayPrice($simProduct['price']) ?></span>
                                 <a href="<?= BASE_URL ?>/product/<?= $simProduct['id'] ?>" class="btn btn-sm btn-outline-primary">
                                     Voir
                                 </a>

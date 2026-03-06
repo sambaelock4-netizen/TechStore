@@ -4,8 +4,15 @@
  * Configuration des constantes de l'application
  */
 
-// URLs du site
-define('BASE_URL', 'http://localhost/TechStore');           // URL de base
+// URLs du site - Auto-detection pour acces local et IP
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$basePath = dirname($_SERVER['SCRIPT_NAME'] ?? '/TechStore');
+// Enlever le /public du chemin si present
+if (substr($basePath, -7) === '/public') {
+    $basePath = substr($basePath, 0, -7);
+}
+define('BASE_URL', $protocol . '://' . $host . $basePath);           // URL de base
 define('PUBLIC_URL', BASE_URL . '/public');                  // Dossier public
 define('UPLOAD_URL', BASE_URL . '/uploads');                 // Dossier uploads
 
@@ -43,9 +50,9 @@ define('DATETIME_FORMAT', 'd/m/Y à H:i');
 define('EUR_TO_CFA', 655.957);
 
 /**
- * Fonction pour afficher le prix en CFA
+ * Fonction pour afficher le prix en Francs CFA (Cameroun)
  */
 function displayPrice($price_eur) {
     $price_cfa = $price_eur * EUR_TO_CFA;
-    return number_format($price_cfa, 0, ',', ' ') . ' CFA';
+    return number_format($price_cfa, 0, ',', ' ') . ' FC';
 }

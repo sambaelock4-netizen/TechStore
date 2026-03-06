@@ -1,4 +1,15 @@
 <?php
+// Vérifier si déjà connecté - rediriger automatiquement vers la page appropriée
+if (isset($_SESSION['user'])) {
+    $userRole = $_SESSION['user']['role'] ?? 'client';
+    if ($userRole === 'admin' || $userRole === 'super_admin') {
+        header('Location: ' . BASE_URL . '/admin');
+    } else {
+        header('Location: ' . BASE_URL . '/home');
+    }
+    exit;
+}
+
 // Traitement du formulaire de connexion
 $error = '';
 $success = '';
@@ -17,25 +28,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
             
             if ($user && password_verify($password, $user['password'])) {
-                // Connexion réussie
+                // Stocker les informations utilisateur dans la session
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'firstname' => $user['firstname'],
+                    'lastname' => $user['lastname'],
+                    'email' => $user['email'],
+                    'role' => $user['role'] ?? 'client'
+                ];
+                
+                // Pour compatibilité rétroactive
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['firstname'] . ' ' . $user['lastname'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'] ?? 'client';
                 
-                // Redirection vers la page précédente ou selon le rôle
+                // Déterminer la page de redirection
                 $redirect = $_GET['redirect'] ?? '';
                 
                 if ($redirect === 'admin') {
-                    // Redirection vers le back office
-                    header('Location: ' . BASE_URL . '/admin');
-                } elseif (in_array($user['role'], ['admin', 'super_admin', 'product_manager', 'order_manager'])) {
-                    // Redirection vers le back office pour les admins
-                    header('Location: ' . BASE_URL . '/admin');
+                    $redirectUrl = BASE_URL . '/admin';
+                } elseif ($user['role'] === 'admin' || $user['role'] === 'super_admin') {
+                    $redirectUrl = BASE_URL . '/admin';
                 } else {
-                    // Redirection vers le compte pour les clients
-                    header('Location: ' . BASE_URL . '/account');
+                    // Rediriger vers la page d'accueil pour les utilisateurs réguliers
+                    $redirectUrl = BASE_URL . '/home';
                 }
+                
+                // Redirection JavaScript immédiate pour éviter le problème de cache
+                echo '<div class="alert alert-success m-3">Connexion réussie! Redirection en cours...</div>';
+                echo '<script>window.location.href = "' . $redirectUrl . '";</script>';
                 exit;
             } else {
                 $error = 'Email ou mot de passe incorrect';
@@ -106,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     Se souvenir de moi
                                 </label>
                             </div>
-                            <a href="<?= BASE_URL ?>/forgot-password" class="text-primary text-decoration-none small">
+                            <a href="#" class="text-primary text-decoration-none small">
                                 Mot de passe oublié ?
                             </a>
                         </div>
@@ -192,6 +214,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     border: none;
     background-color: #f8d7da;
     color: #842029;
+}
+
+.alert-success {
+    border-radius: 8px;
+    border: none;
+    background-color: #d1e7dd;
+    color: #0f5132;
 }
 </style>
 

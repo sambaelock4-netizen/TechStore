@@ -298,7 +298,7 @@ try {
                                             <tr>
                                                 <td><strong>#<?= str_pad($order['id'], 6, '0', STR_PAD_LEFT) ?></strong></td>
                                                 <td><?= date('d/m/Y', strtotime($order['created_at'])) ?></td>
-                                                <td><?= number_format($order['total_amount'], 2, ',', ' ') ?> €</td>
+                                                <td><?= number_format($order['total_amount'], 2, ',', ' ') ?> FC</td>
                                                 <td>
                                                     <?php
                                                     $status_class = [

@@ -78,6 +78,55 @@ body {
     margin: 0 5px;
 }
 
+/* Mobile Carousel Styles */
+@media (max-width: 768px) {
+    #techStoreHero .carousel-item {
+        min-height: 350px;
+    }
+    
+    #techStoreHero .carousel-item .carousel-item-content {
+        min-height: 350px;
+        padding: 1rem 0;
+    }
+    
+    #techStoreHero .carousel-item .carousel-item-content .col-md-7 {
+        text-align: center !important;
+    }
+    
+    #techStoreHero .carousel-item h1,
+    #techStoreHero .carousel-item h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    #techStoreHero .carousel-item p {
+        font-size: 0.9rem !important;
+    }
+    
+    #techStoreHero .carousel-indicators {
+        bottom: 10px;
+    }
+    
+    #techStoreHero .carousel-indicators button {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    #techStoreHero .carousel-item {
+        min-height: 300px;
+    }
+    
+    #techStoreHero .carousel-item .carousel-item-content {
+        min-height: 300px;
+    }
+    
+    #techStoreHero .carousel-item h1,
+    #techStoreHero .carousel-item h2 {
+        font-size: 1.3rem !important;
+    }
+}
+
 /* Hero Content Animation */
 #techStoreHero .carousel-item {
     opacity: 1;

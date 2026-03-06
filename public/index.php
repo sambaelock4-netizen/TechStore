@@ -20,7 +20,13 @@ $url = explode('/', $url);
 // Routing - Mapper les URLs vers les contrôleurs
 $page = isset($url[0]) ? $url[0] : 'home';
 $action = isset($url[1]) ? $url[1] : 'index';
-$id = isset($url[1]) ? intval($url[1]) : null;
+// Pour les pages produit, l'ID est dans $url[1], pour admin c'est dans $url[2-3]
+$id = null;
+if (in_array($page, ['product'])) {
+    $id = isset($url[1]) ? intval($url[1]) : null;
+} else {
+    $id = isset($url[2]) ? intval($url[2]) : null;
+}
 
 // Tableau des pages valides
 $valid_pages = ['home', 'catalogue', 'product', 'cart', 'login', 'register', 'account', 'orders', 'search', 'admin', 'logout', 'checkout'];
@@ -45,6 +51,8 @@ switch ($page) {
     case 'product':
         $title = 'Produit - TechStore';
         $view = VIEW_PATH . '/front/product.php';
+        // Pass the product ID to the view via $id variable
+        // URL format: /product/{id}
         break;
         
     case 'cart':
@@ -90,7 +98,6 @@ switch ($page) {
         
         // Router les actions admin
         $adminAction = isset($url[1]) ? $url[1] : 'index';
-        $adminId = isset($url[2]) ? intval($url[2]) : null;
         
         switch ($adminAction) {
             case '':
@@ -105,56 +112,76 @@ switch ($page) {
                 break;
             case 'product':
                 $subAction = isset($url[2]) ? $url[2] : 'index';
+                $productId = isset($url[3]) ? intval($url[3]) : null;
                 if ($subAction === 'add') {
                     $adminController->addProduct();
-                } elseif ($subAction === 'edit' && $adminId) {
-                    $adminController->editProduct($adminId);
-                } elseif ($subAction === 'delete' && $adminId) {
-                    $adminController->deleteProduct($adminId);
+                } elseif ($subAction === 'edit' && $productId) {
+                    $adminController->editProduct($productId);
+                } elseif ($subAction === 'delete' && $productId) {
+                    $adminController->deleteProduct($productId);
                 } else {
                     $adminController->products();
                 }
                 break;
             case 'orders':
                 $subAction = isset($url[2]) ? $url[2] : 'index';
+                $orderId = isset($url[3]) ? intval($url[3]) : null;
                 if (is_numeric($subAction)) {
                     $adminController->viewOrder(intval($subAction));
-                } elseif ($subAction === 'view' && $adminId) {
-                    $adminController->viewOrder($adminId);
-                } elseif ($subAction === 'update' && $adminId) {
-                    $adminController->updateOrderStatus($adminId);
+                } elseif ($subAction === 'view' && $orderId) {
+                    $adminController->viewOrder($orderId);
+                } elseif ($subAction === 'update' && $orderId) {
+                    $adminController->updateOrderStatus($orderId);
                 } else {
                     $adminController->orders();
                 }
                 break;
             case 'users':
                 $subAction = isset($url[2]) ? $url[2] : 'index';
+                $userId = isset($url[3]) ? intval($url[3]) : null;
                 if ($subAction === 'add') {
                     $adminController->addUser();
-                } elseif ($subAction === 'edit' && $adminId) {
-                    $adminController->editUser($adminId);
-                } elseif ($subAction === 'delete' && $adminId) {
-                    $adminController->deleteUser($adminId);
-                } elseif ($subAction === 'reset' && $adminId) {
-                    $adminController->resetUserPassword($adminId);
+                } elseif ($subAction === 'edit' && $userId) {
+                    $adminController->editUser($userId);
+                } elseif ($subAction === 'delete' && $userId) {
+                    $adminController->deleteUser($userId);
+                } elseif ($subAction === 'reset' && $userId) {
+                    $adminController->resetUserPassword($userId);
                 } else {
                     $adminController->users();
                 }
                 break;
             case 'categories':
                 $subAction = isset($url[2]) ? $url[2] : 'index';
+                $catId = isset($url[3]) ? intval($url[3]) : null;
                 if ($subAction === 'add') {
                     $adminController->addCategory();
-                } elseif ($subAction === 'edit' && $adminId) {
-                    $adminController->editCategory($adminId);
-                } elseif ($subAction === 'delete' && $adminId) {
-                    $adminController->deleteCategory($adminId);
+                } elseif ($subAction === 'edit' && $catId) {
+                    $adminController->editCategory($catId);
+                } elseif ($subAction === 'delete' && $catId) {
+                    $adminController->deleteCategory($catId);
                 } else {
                     $adminController->categories();
                 }
                 break;
-            case 'logs':
-                $adminController->logs();
+            case 'stock':
+                $adminController->stock();
+                break;
+            case 'promotions':
+                $subAction = isset($url[2]) ? $url[2] : 'index';
+                $promoId = isset($url[3]) ? intval($url[3]) : null;
+                if ($subAction === 'add') {
+                    $adminController->addPromotion();
+                } elseif ($subAction === 'edit' && $promoId) {
+                    $adminController->editPromotion($promoId);
+                } elseif ($subAction === 'delete' && $promoId) {
+                    $adminController->deletePromotion($promoId);
+                } else {
+                    $adminController->promotions();
+                }
+                break;
+            case 'statistics':
+                $adminController->statistics();
                 break;
             case 'profile':
                 $adminController->profile();

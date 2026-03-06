@@ -1,4 +1,15 @@
 <?php
+// Vérifier si déjà connecté - rediriger automatiquement vers la page appropriée
+if (isset($_SESSION['user'])) {
+    $userRole = $_SESSION['user']['role'] ?? 'client';
+    if ($userRole === 'admin' || $userRole === 'super_admin') {
+        header('Location: ' . BASE_URL . '/admin');
+    } else {
+        header('Location: ' . BASE_URL . '/account');
+    }
+    exit;
+}
+
 // Traitement du formulaire d'inscription
 $error = '';
 $success = '';
@@ -73,12 +84,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     <?php endif; ?>
                     
-                    <!-- Message de succès -->
+                    <!-- Message de succès avec redirection automatique -->
                     <?php if ($success): ?>
                         <div class="alert alert-success animate__animated animate__fadeIn">
                             <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($success) ?>
-                            <a href="<?= BASE_URL ?>/login" class="alert-link">Se connecter</a>
+                            <p class="mt-2 mb-0">Redirection automatique vers la page de connexion...</p>
                         </div>
+                        <script>
+                            setTimeout(function() {
+                                window.location.href = '<?= BASE_URL ?>/login';
+                            }, 3000);
+                        </script>
                     <?php endif; ?>
                     
                     <!-- Formulaire -->
@@ -92,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <i class="bi bi-person text-muted"></i>
                                     </span>
                                     <input type="text" class="form-control border-start-0" id="firstname" name="firstname" 
-                                           placeholder="Jean" required 
+                                           placeholder="Thierry" required 
                                            value="<?= htmlspecialchars($_POST['firstname'] ?? '') ?>">
                                 </div>
                             </div>
@@ -103,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <i class="bi bi-person text-muted"></i>
                                     </span>
                                     <input type="text" class="form-control border-start-0" id="lastname" name="lastname" 
-                                           placeholder="Dupont" required 
+                                           placeholder="Armel" required 
                                            value="<?= htmlspecialchars($_POST['lastname'] ?? '') ?>">
                                 </div>
                             </div>
@@ -116,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <i class="bi bi-envelope text-muted"></i>
                                 </span>
                                 <input type="email" class="form-control border-start-0" id="email" name="email" 
-                                       placeholder="vous@exemple.com" required 
+                                       placeholder="Thierry@gmail.com" required 
                                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
                             </div>
                         </div>
@@ -262,12 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
             passwordInput.setAttribute('type', type);
             eyeIcon.classList.toggle('bi-eye');
             eyeIcon.classList.toggle('bi-eye-slash');
-        });
-        
-        // Password strength indicator (optional enhancement)
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            // You could add password strength validation here
         });
     }
 });

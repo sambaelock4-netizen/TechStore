@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                             <hr>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Sous-total</span>
-                                <span id="checkout-subtotal">0,00 €</span>
+                                <span id="checkout-subtotal">0,00 FC</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Livraison</span>
@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                             <hr>
                             <div class="d-flex justify-content-between mb-4">
                                 <span class="fw-bold">Total</span>
-                                <span class="fw-bold text-primary fs-5" id="checkout-total">0,00 €</span>
+                                <span class="fw-bold text-primary fs-5" id="checkout-total">0,00 FC</span>
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" <?= empty($addresses) ? 'disabled' : '' ?>>
@@ -223,14 +223,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemTotal = item.price * item.quantity;
             subtotal += itemTotal;
             
-            html += '<div class="d-flex justify-content-between mb-2"><span>' + item.name + ' x' + item.quantity + '</span><span>' + itemTotal.toFixed(2).replace('.', ',') + ' €</span></div>';
+            html += '<div class="d-flex justify-content-between mb-2"><span>' + item.name + ' x' + item.quantity + '</span><span>' + itemTotal.toFixed(2).replace('.', ',') + ' FC</span></div>';
         });
         
         html += '<input type="hidden" id="cart-data-input" value=\'' + JSON.stringify(cart) + '\'>';
         
         itemsContainer.innerHTML = html;
-        subtotalElement.textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
-        totalElement.textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
+        subtotalElement.textContent = subtotal.toFixed(2).replace('.', ',') + ' FC';
+        totalElement.textContent = subtotal.toFixed(2).replace('.', ',') + ' FC';
         
         // Mettre à jour le champ hidden
         document.getElementById('cart-data').value = JSON.stringify(cart);
