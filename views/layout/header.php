@@ -114,6 +114,11 @@
         }
         
         .cart-badge { font-size: 0.7rem; top: -5px; right: -10px; }
+        /* Force la disparition du badge fantôme dans le slider */
+.carousel-item .badge.animate__infinite, 
+#promoCartBadge {
+    display: none !important;
+}
     </style>
 </head>
 <body>
@@ -181,29 +186,5 @@
         </div>
     </nav>
 </header>
-
-<script>
-    // Update cart count on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        updateCartCount();
-    });
-
-    function updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
-        const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-        
-        // Update header cart badge
-        const headerCartBadge = document.getElementById('headerCartCount');
-        if (headerCartBadge) {
-            headerCartBadge.textContent = totalItems;
-        }
-        
-        // Update promo cart badge in home page carousel
-        const promoCartBadge = document.getElementById('promoCartBadge');
-        if (promoCartBadge) {
-            promoCartBadge.textContent = '🛒 Panier (' + totalItems + ')';
-        }
-    }
-</script>
 
 <main>

@@ -83,7 +83,11 @@ try {
                 <?php foreach ($products as $product): ?>
                     <div class="col-6 col-md-4 col-lg-3">
                         <div class="card product-card h-100 shadow-sm <?= $product['stock'] == 0 ? 'opacity-75' : '' ?>">
-                            <?php if ($product['stock'] == 0): ?>
+                            <?php if ($product['is_promotion'] && $product['discount'] > 0): ?>
+                                <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded small">
+                                    -<?= $product['discount'] ?>%
+                                </div>
+                            <?php elseif ($product['stock'] == 0): ?>
                                 <div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 rounded small">
                                     Rupture
                                 </div>
@@ -130,18 +134,27 @@ try {
                                 </div>
                                 
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <span class="h5 text-primary mb-0"><?= displayPrice($product['price']) ?></span>
+                                    <div>
+                                        <?php if ($product['is_promotion'] && $product['old_price'] > 0): ?>
+                                            <span class="text-muted text-decoration-line-through small d-block"><?= number_format($product['old_price'], 2, ',', ' ') ?> FC</span>
+                                            <span class="h5 text-danger mb-0"><?= displayPrice($product['price']) ?></span>
+                                        <?php else: ?>
+                                            <span class="h5 text-primary mb-0"><?= displayPrice($product['price']) ?></span>
+                                        <?php endif; ?>
+                                    </div>
                                     
                                     <div class="d-flex gap-2">
                                         <a href="<?= BASE_URL ?>/product/<?= $product['id'] ?>" class="btn btn-outline-primary btn-sm">
                                             <i class="bi bi-eye me-1"></i>
                                         </a>
                                         <?php if ($product['stock'] > 0): ?>
-                                            <button class="btn btn-primary btn-sm add-to-cart" 
+                                            <button class="btn <?= $product['is_promotion'] ? 'btn-danger' : 'btn-primary' ?> btn-sm add-to-cart" 
                                                     data-id="<?= $product['id'] ?>"
                                                     data-name="<?= htmlspecialchars($product['name']) ?>"
                                                     data-price="<?= $product['price'] ?>"
-                                                    data-stock="<?= $product['stock'] ?>">
+                                                    data-stock="<?= $product['stock'] ?>"
+                                                    data-is-promotion="<?= $product['is_promotion'] ?>"
+                                                    data-discount="<?= $product['discount'] ?>">
                                                 <i class="bi bi-cart-plus me-1"></i>
                                             </button>
                                         <?php else: ?>
@@ -159,91 +172,6 @@ try {
         <?php endif; ?>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var addToCartButtons = document.querySelectorAll('.add-to-cart');
-    
-    addToCartButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var id = this.getAttribute('data-id');
-            var name = this.getAttribute('data-name');
-            var price = parseFloat(this.getAttribute('data-price'));
-            var stock = parseInt(this.getAttribute('data-stock'));
-            
-            addToCartItem(id, name, price, stock);
-        });
-    });
-    
-    function addToCartItem(id, name, price, stock) {
-        var cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
-        var existingItem = null;
-        
-        for (var i = 0; i < cart.length; i++) {
-            if (cart[i].id === id) {
-                existingItem = cart[i];
-                break;
-            }
-        }
-        
-        var currentQty = existingItem ? existingItem.quantity : 0;
-        
-        if (currentQty >= stock) {
-            showToast('Stock insuffisant! Il ne reste que ' + stock + ' exemplaire(s).', 'error');
-            return;
-        }
-        
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.push({
-                id: id,
-                name: name,
-                price: price,
-                quantity: 1
-            });
-        }
-        
-        localStorage.setItem('techstore_cart', JSON.stringify(cart));
-        updateCartBadge();
-        showToast(name + ' a été ajouté au panier!', 'success');
-    }
-    
-    function updateCartBadge() {
-        var cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
-        var count = 0;
-        for (var i = 0; i < cart.length; i++) {
-            count += cart[i].quantity;
-        }
-        var badge = document.querySelector('.cart-badge');
-        if (badge) {
-            badge.textContent = count;
-        }
-    }
-    
-    function showToast(message, type) {
-        var toast = document.createElement('div');
-        toast.className = 'toast-notification';
-        
-        var icon = type === 'success' ? 'bi-check-circle text-success' : 'bi-exclamation-circle text-danger';
-        
-        toast.innerHTML = '<i class="bi ' + icon + ' me-2"></i>' + message;
-        
-        if (!document.getElementById('toast-styles')) {
-            var styles = document.createElement('style');
-            styles.id = 'toast-styles';
-            styles.textContent = '.toast-notification{position:fixed;bottom:20px;right:20px;background:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9999;animation:slideIn .3s ease}@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
-            document.head.appendChild(styles);
-        }
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(function() {
-            toast.remove();
-        }, 3000);
-    }
-});
-</script>
 
 <style>
 .catalogue-page {

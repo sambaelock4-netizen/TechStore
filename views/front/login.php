@@ -1,16 +1,5 @@
 <?php
-// Vérifier si déjà connecté - rediriger automatiquement vers la page appropriée
-if (isset($_SESSION['user'])) {
-    $userRole = $_SESSION['user']['role'] ?? 'client';
-    if ($userRole === 'admin' || $userRole === 'super_admin') {
-        header('Location: ' . BASE_URL . '/admin');
-    } else {
-        header('Location: ' . BASE_URL . '/home');
-    }
-    exit;
-}
-
-// Traitement du formulaire de connexion
+// Traitement du formulaire de connexion (même si déjà connecté, permettre la connexion)
 $error = '';
 $success = '';
 
@@ -47,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $redirect = $_GET['redirect'] ?? '';
                 
                 if ($redirect === 'admin') {
-                    $redirectUrl = BASE_URL . '/admin';
+                    $redirectUrl = BASE_URL . '/admin_splash.php';
                 } elseif ($user['role'] === 'admin' || $user['role'] === 'super_admin') {
-                    $redirectUrl = BASE_URL . '/admin';
+                    $redirectUrl = BASE_URL . '/admin_splash.php';
                 } else {
                     // Rediriger vers la page d'accueil pour les utilisateurs réguliers
                     $redirectUrl = BASE_URL . '/home';

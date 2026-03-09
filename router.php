@@ -1,15 +1,15 @@
 <?php
 /**
- * TECHSTORE - Point d'entrée principal
- * Ce fichier est le seul accessible depuis le navigateur
+ * TechStore - Router
+ * Point d'entrée principal avec routage
  */
 
 // Démarrer la session
 session_start();
 
 // Charger les fichiers de configuration
-require_once dirname(__DIR__) . '/config/constants.php';
-require_once dirname(__DIR__) . '/config/db.php';
+require_once dirname(__FILE__) . '/config/constants.php';
+require_once dirname(__FILE__) . '/config/db.php';
 
 // Récupérer l'URL demandée
 $url = isset($_GET['url']) ? $_GET['url'] : '';
@@ -174,9 +174,6 @@ switch ($page) {
                     $adminController->promotions();
                 }
                 break;
-            case 'statistics':
-                $adminController->statistics();
-                break;
             case 'profile':
                 $adminController->profile();
                 break;
@@ -207,3 +204,4 @@ if (!file_exists($view)) {
 require_once VIEW_PATH . '/layout/header.php';
 require_once $view;
 require_once VIEW_PATH . '/layout/footer.php';
+

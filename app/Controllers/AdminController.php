@@ -17,7 +17,6 @@ class AdminController extends Controller {
     
     public function index() {
         try {
-            // Get stats from existing database
             $totalProducts = 0;
             $totalOrders = 0;
             $totalUsers = 0;
@@ -50,7 +49,6 @@ class AdminController extends Controller {
                 'total_revenue' => $totalRevenue
             ];
             
-            // Get recent orders
             $recentOrders = [];
             try {
                 $stmt = $this->pdo->query("
@@ -69,7 +67,6 @@ class AdminController extends Controller {
             ]);
             
         } catch (Exception $e) {
-            // If there's an error, show a simple dashboard
             $this->render('/back/index.php', [
                 'stats' => [
                     'total_products' => 0,
@@ -130,8 +127,17 @@ class AdminController extends Controller {
             $promotion_start_date = !empty($_POST['promotion_start_date']) ? $_POST['promotion_start_date'] : null;
             $promotion_end_date = !empty($_POST['promotion_end_date']) ? $_POST['promotion_end_date'] : null;
             
-            // Gérer l'upload de l'image
-            $image = $this->handleImageUpload($_FILES['image'] ?? null);
+            // Gérer l'image: priorité au champ texte "image_name", sinon upload
+            $image = null;
+            
+            // D'abord vérifier si un nom d'image a été entré manuellement
+            if (!empty($_POST['image_name'])) {
+                $image = trim($_POST['image_name']);
+            }
+            // Sinon essayer l'upload de fichier
+            elseif (!empty($_FILES['image']['name'])) {
+                $image = $this->handleImageUpload($_FILES['image'] ?? null);
+            }
             
             $stmt = $this->pdo->prepare("
                 INSERT INTO products (name, slug, description, short_description, price, stock, category_id, is_featured, is_active, is_production, is_promotion, promotion_price, discount, promotion_start_date, promotion_end_date, image)
@@ -185,20 +191,24 @@ class AdminController extends Controller {
             $promotion_start_date = !empty($_POST['promotion_start_date']) ? $_POST['promotion_start_date'] : null;
             $promotion_end_date = !empty($_POST['promotion_end_date']) ? $_POST['promotion_end_date'] : null;
             
-            // Gérer l'upload de l'image
-            $image = $product['image']; // Garder l'image actuelle par défaut
+            // Gérer l'image
+            $image = $product['image'];
             
+            // Supprimer l'image si demandé
             if (isset($_POST['delete_image']) && $_POST['delete_image'] == 1) {
-                // Supprimer l'image
                 if (!empty($product['image'])) {
                     $this->deleteImage($product['image']);
                 }
                 $image = null;
-            } elseif (!empty($_FILES['image']['name'])) {
-                // Nouvelle image uploadée
+            }
+            // Nouveau nom d'image entré manuellement
+            elseif (!empty($_POST['image_name'])) {
+                $image = trim($_POST['image_name']);
+            }
+            // Sinon nouvelle image uploadée
+            elseif (!empty($_FILES['image']['name'])) {
                 $newImage = $this->handleImageUpload($_FILES['image'] ?? null);
                 if ($newImage) {
-                    // Supprimer l'ancienne image
                     if (!empty($product['image'])) {
                         $this->deleteImage($product['image']);
                     }
@@ -233,7 +243,6 @@ class AdminController extends Controller {
     }
     
     public function deleteProduct($id) {
-        // Récupérer l'image avant suppression
         $stmt = $this->pdo->prepare("SELECT image FROM products WHERE id = ?");
         $stmt->execute([$id]);
         $product = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -484,7 +493,6 @@ class AdminController extends Controller {
             $products = [];
         }
         
-        // Produits en faible stock
         $lowStockProducts = array_filter($products, function($p) {
             return ($p['stock'] ?? 0) <= 5;
         });
@@ -498,7 +506,6 @@ class AdminController extends Controller {
     // ==================== PROMOTIONS ====================
     
     public function promotions() {
-        // Récupérer les produits en promotion
         $promotions = [];
         try {
             $stmt = $this->pdo->query("
@@ -520,7 +527,6 @@ class AdminController extends Controller {
     
     public function addPromotion() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Simple promotion creation - redirects to promotions list
             $this->redirect('/admin/promotions');
         }
         $this->render('/back/promotion_form.php', [
@@ -539,82 +545,6 @@ class AdminController extends Controller {
     
     public function deletePromotion($id) {
         $this->redirect('/admin/promotions');
-    }
-    
-    // ==================== STOCK ====================
-    
-    public function stockMovements() {
-        $this->render('/back/stock_movements.php', [
-            'movements' => []
-        ]);
-    }
-    
-    // ==================== EXPORT ====================
-    
-    public function exportData() {
-        // Simple export functionality
-        $format = $_GET['format'] ?? 'csv';
-        
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="export_' . date('Y-m-d') . '.csv"');
-        
-        $output = fopen('php://output', 'w');
-        fputcsv($output, ['ID', 'Nom', 'Prix', 'Stock']);
-        
-        try {
-            $stmt = $this->pdo->query("SELECT id, name, price, stock FROM products");
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                fputcsv($output, $row);
-            }
-        } catch (Exception $e) {}
-        
-        fclose($output);
-        exit;
-    }
-    
-    // ==================== STATISTIQUES ====================
-    
-    public function statistics() {
-        $stats = [
-            'total_revenue' => 0,
-            'total_orders' => 0,
-            'new_customers' => 0,
-            'avg_order_value' => 0,
-            'revenue_change' => 0,
-            'orders_change' => 0,
-            'customers_change' => 0,
-            'avg_change' => 0
-        ];
-        
-        try {
-            $stmt = $this->pdo->query("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'annule'");
-            $stats['total_revenue'] = $stmt ? $stmt->fetchColumn() : 0;
-        } catch (Exception $e) {}
-        
-        try {
-            $stmt = $this->pdo->query("SELECT COUNT(*) FROM orders WHERE status != 'annule'");
-            $stats['total_orders'] = $stmt ? $stmt->fetchColumn() : 0;
-        } catch (Exception $e) {}
-        
-        try {
-            $stmt = $this->pdo->query("SELECT COUNT(*) FROM users WHERE role = 'client'");
-            $stats['new_customers'] = $stmt ? $stmt->fetchColumn() : 0;
-        } catch (Exception $e) {}
-        
-        if ($stats['total_orders'] > 0) {
-            $stats['avg_order_value'] = $stats['total_revenue'] / $stats['total_orders'];
-        }
-        
-        $this->render('/back/statistics.php', [
-            'stats' => $stats,
-            'topProducts' => [],
-            'topCustomers' => [],
-            'salesLabels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-            'salesData' => [0, 0, 0, 0, 0, 0, 0],
-            'categoryLabels' => ['Catégorie A', 'Catégorie B'],
-            'categoryData' => [1, 1],
-            'period' => 'month'
-        ]);
     }
     
     // ==================== PROFIL ====================
@@ -649,79 +579,45 @@ class AdminController extends Controller {
     
     // ==================== GESTION DES IMAGES ====================
     
-    /**
-     * Gère l'upload d'une image
-     * @param array|null $file Le fichier uploadé ($_FILES['image'])
-     * @return string|null Le nom du fichier image ou null si erreur
-     */
-    private function handleImageUpload($file) {
-        if (empty($file) || $file['error'] !== UPLOAD_ERR_OK) {
-            error_log("Image upload error: file empty or error code " . ($file['error'] ?? 'no file'));
+    private function handleImageUpload($file)
+    {
+        if (!isset($file) || $file['error'] != 0) {
             return null;
         }
-        
-        // Vérifications de sécurité
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $fileType = mime_content_type($file['tmp_name']);
-        
-        if (!in_array($fileType, $allowedTypes)) {
-            error_log("Image upload error: invalid file type " . $fileType);
-            return null;
+
+        $uploadDir = __DIR__ . '/../../public/uploads/';
+
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
         }
-        
-        // Taille maximale 2MB
-        if ($file['size'] > 2 * 1024 * 1024) {
-            error_log("Image upload error: file too large " . $file['size']);
-            return null;
-        }
-        
-        // Créer le dossier uploads si nécessaire
-        $uploadDir = UPLOAD_PATH;
-        if (!is_dir($uploadDir)) {
-            if (!mkdir($uploadDir, 0755, true)) {
-                error_log("Image upload error: cannot create upload directory");
-                return null;
-            }
-        }
-        
-        // Vérifier si le dossier est accessible en écriture
-        if (!is_writable($uploadDir)) {
-            error_log("Image upload error: upload directory is not writable");
-            // Essayer avec des permissions plus larges
-            chmod($uploadDir, 0777);
-        }
-        
-        // Générer un nom de fichier unique
+
         $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $filename = uniqid('product_') . '_' . time() . '.' . $extension;
-        $targetPath = $uploadDir . '/' . $filename;
-        
-        // Déplacer le fichier
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            error_log("Image uploaded successfully: " . $filename);
+
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+
+        if(!in_array($extension,$allowed)){
+            return null;
+        }
+
+        $filename = time().'_'.uniqid().'.'.$extension;
+
+        $destination = $uploadDir.$filename;
+
+        if(move_uploaded_file($file['tmp_name'],$destination)){
             return $filename;
         }
-        
-        // Si move_uploaded_file échoue (peut-être pas en environnement HTTP), essayer copy
-        if (copy($file['tmp_name'], $targetPath)) {
-            error_log("Image copied successfully: " . $filename);
-            return $filename;
-        }
-        
-        error_log("Image upload error: cannot move or copy file to " . $targetPath);
+
         return null;
     }
     
-    /**
-     * Supprime une image du serveur
-     * @param string $filename Le nom du fichier à supprimer
-     */
     private function deleteImage($filename) {
         if (empty($filename)) {
             return;
         }
         
-        $filePath = UPLOAD_PATH . '/' . $filename;
+        $uploadDir = __DIR__ . '/../../public/uploads/';
+        $filePath = $uploadDir . $filename;
+        
         if (file_exists($filePath)) {
             unlink($filePath);
         }

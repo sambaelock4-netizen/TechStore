@@ -101,7 +101,9 @@ function getImageUrl($imgPath) {
                             alt="<?= htmlspecialchars($product['name']) ?>" 
                             class="img-fluid main-image"
                             data-zoom-image="<?= htmlspecialchars($product_images[0]) ?>">
-                        <?php if ($product['stock'] > 0 && $product['stock'] <= 5): ?>
+                        <?php if ($product['is_promotion'] && $product['discount'] > 0): ?>
+                        <span class="stock-badge promotion-badge">-<?= $product['discount'] ?>%</span>
+                        <?php elseif ($product['stock'] > 0 && $product['stock'] <= 5): ?>
                         <span class="stock-badge low-stock">Plus que <?= $product['stock'] ?> en stock!</span>
                         <?php elseif ($product['stock'] == 0): ?>
                         <span class="stock-badge out-of-stock">Rupture de stock</span>
@@ -136,7 +138,13 @@ function getImageUrl($imgPath) {
                     
                     <!-- Price -->
                     <div class="product-price mb-4">
-                        <span class="current-price"><?= displayPrice($product['price']) ?></span>
+                        <?php if ($product['is_promotion'] && $product['old_price'] > 0): ?>
+                            <span class="old-price text-muted text-decoration-line-through me-3"><?= number_format($product['old_price'], 2, ',', ' ') ?> FC</span>
+                            <span class="current-price text-danger"><?= displayPrice($product['price']) ?></span>
+                            <span class="badge bg-danger ms-2">Promotion -<?= $product['discount'] ?>%</span>
+                        <?php else: ?>
+                            <span class="current-price"><?= displayPrice($product['price']) ?></span>
+                        <?php endif; ?>
                     </div>
                     
                     <!-- Stock Status -->
@@ -178,11 +186,16 @@ function getImageUrl($imgPath) {
                                 </div>
                             </div>
                             <div class="col-md-8">
-                                <button class="btn btn-primary btn-lg w-100 add-to-cart" 
+                                <button class="btn <?= $product['is_promotion'] ? 'btn-danger' : 'btn-primary' ?> btn-lg w-100 add-to-cart"
                                     data-id="<?= $product['id'] ?>"
                                     data-name="<?= htmlspecialchars($product['name']) ?>"
-                                    data-price="<?= $product['price'] ?>">
+                                    data-price="<?= $product['price'] ?>"
+                                    data-is-promotion="<?= $product['is_promotion'] ?>"
+                                    data-discount="<?= $product['discount'] ?>">
                                     <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+                                    <?php if ($product['is_promotion']): ?>
+                                    <span class="badge bg-white text-danger ms-2">-<?= $product['discount'] ?>%</span>
+                                    <?php endif; ?>
                                 </button>
                             </div>
                         </div>
@@ -560,46 +573,5 @@ function changeQuantity(change) {
     if (value > max) value = max;
     
     input.value = value;
-}
-
-// Add to cart functionality
-document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', function() {
-        const id = this.dataset.id;
-        const name = this.dataset.name;
-        const price = parseFloat(this.dataset.price);
-        const quantity = parseInt(document.getElementById('quantity').value);
-        
-        addToCart(id, name, price, quantity);
-    });
-});
-
-function addToCart(id, name, price, quantity) {
-    let cart = JSON.parse(localStorage.getItem('techstore_cart')) || [];
-    
-    const existingItem = cart.find(item => item.id === id);
-    
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            id: id,
-            name: name,
-            price: price,
-            quantity: quantity
-        });
-    }
-    
-    localStorage.setItem('techstore_cart', JSON.stringify(cart));
-    
-    // Update badge
-    const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-    const badge = document.querySelector('.cart-badge');
-    if (badge) {
-        badge.textContent = cartCount;
-    }
-    
-    // Show toast
-    showToast(name + ' a été ajouté au panier (' + quantity + ')', 'success');
 }
 </script>

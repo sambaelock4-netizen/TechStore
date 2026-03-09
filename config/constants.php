@@ -8,20 +8,16 @@
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $basePath = dirname($_SERVER['SCRIPT_NAME'] ?? '/TechStore');
-// Enlever le /public du chemin si present
-if (substr($basePath, -7) === '/public') {
-    $basePath = substr($basePath, 0, -7);
-}
 define('BASE_URL', $protocol . '://' . $host . $basePath);           // URL de base
 define('PUBLIC_URL', BASE_URL . '/public');                  // Dossier public
-define('UPLOAD_URL', BASE_URL . '/uploads');                 // Dossier uploads
+define('UPLOAD_URL', PUBLIC_URL . '/uploads');                 // Dossier uploads
 
 // Chemins absolus
 define('ROOT_PATH', dirname(__DIR__));                         // Racine du projet
 define('APP_PATH', ROOT_PATH . '/app');                      // Dossier app
 define('PUBLIC_PATH', ROOT_PATH . '/public');                // Dossier public
 define('VIEW_PATH', ROOT_PATH . '/views');                   // Dossier views
-define('UPLOAD_PATH', ROOT_PATH . '/uploads');              // Dossier uploads
+define('UPLOAD_PATH', PUBLIC_PATH . '/uploads');              // Dossier uploads
 define('CONFIG_PATH', ROOT_PATH . '/config');                // Dossier config
 
 // Informations du site
