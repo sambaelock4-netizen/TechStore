@@ -336,14 +336,17 @@ function getImageUrl($imgPath) {
     min-height: calc(100vh - 200px);
 }
 
+/* Gallery Container */
 .product-gallery .main-image-container {
     position: relative;
     background: white;
-    border-radius: 12px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    cursor: crosshair;
 }
 
+/* Main Image with Zoom */
 .product-gallery .main-image {
     width: 100%;
     height: auto;
@@ -351,9 +354,76 @@ function getImageUrl($imgPath) {
     transition: transform 0.3s ease;
 }
 
-.product-gallery .main-image:hover {
-    transform: scale(1.05);
-    cursor: zoom-in;
+/* Zoom Effect */
+.zoom-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.zoom-lens {
+    position: absolute;
+    border: 3px solid rgba(13, 110, 253, 0.8);
+    width: 100px;
+    height: 100px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: none;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.zoom-result {
+    position: absolute;
+    top: 0;
+    left: 105%;
+    width: 400px;
+    height: 400px;
+    border: 3px solid #e0e0e0;
+    border-radius: 20px;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.zoom-result img {
+    max-width: none;
+}
+
+/* Show zoom on hover */
+.main-image-container:hover .zoom-result {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Alternative: Scale zoom effect */
+.main-image-container.zoomed {
+    overflow: hidden;
+}
+
+.main-image-container.zoomed .main-image {
+    transform: scale(2);
+    transform-origin: center center;
+}
+
+/* Stock Badge */
+.stock-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .stock-badge {
@@ -556,6 +626,33 @@ function getImageUrl($imgPath) {
 </style>
 
 <script>
+// Zoom Effect - Mouse move zoom
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('.main-image-container');
+    const img = document.getElementById('mainImage');
+    
+    if (container && img) {
+        container.addEventListener('mousemove', function(e) {
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate position as percentage
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+            
+            // Apply zoom transform
+            img.style.transformOrigin = xPercent + '% ' + yPercent + '%';
+            img.style.transform = 'scale(2)';
+        });
+        
+        container.addEventListener('mouseleave', function() {
+            img.style.transform = 'scale(1)';
+            img.style.transformOrigin = 'center center';
+        });
+    }
+});
+
 function changeImage(src, element) {
     document.getElementById('mainImage').src = src;
     document.querySelectorAll('.thumbnail-item').forEach(item => {

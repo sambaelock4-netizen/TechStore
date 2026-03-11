@@ -64,18 +64,201 @@ body {
     z-index: 10;
 }
 
+/* ===== ANIMATED CAROUSEL BUTTONS ===== */
+#techStoreHero .carousel-control-prev,
+#techStoreHero .carousel-control-next {
+    opacity: 0;
+    animation: carouselButtonsFadeIn 0.8s ease forwards;
+    animation-delay: 0.5s;
+}
+
+@keyframes carouselButtonsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+#techStoreHero .carousel-control-prev {
+    animation-name: carouselButtonsFadeInLeft;
+}
+
+@keyframes carouselButtonsFadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+#techStoreHero .carousel-control-next {
+    animation-name: carouselButtonsFadeInRight;
+}
+
+@keyframes carouselButtonsFadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Navigation arrows - Hover effects */
 #techStoreHero .carousel-control-prev-icon,
 #techStoreHero .carousel-control-next-icon {
     width: 3rem;
     height: 3rem;
     background-size: 50% 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-#techStoreHero .carousel-indicators button {
+/* Hover state with scale and glow */
+#techStoreHero .carousel-control-prev:hover .carousel-control-prev-icon,
+#techStoreHero .carousel-control-next:hover .carousel-control-next-icon {
+    transform: scale(1.3);
+    filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Color change on hover */
+#techStoreHero .carousel-control-prev:hover .carousel-control-prev-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffc107'%3e%3cpath d='M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z'/%3e%3c/svg%3e") !important;
+}
+
+#techStoreHero .carousel-control-next:hover .carousel-control-next-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffc107'%3e%3cpath d='M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+}
+
+/* Continuous subtle pulse animation on buttons */
+#techStoreHero .carousel-control-prev,
+#techStoreHero .carousel-control-next {
+    transition: all 0.3s ease;
+}
+
+#techStoreHero .carousel-control-prev:hover,
+#techStoreHero .carousel-control-next:hover {
+    background: linear-gradient(90deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+}
+
+/* ===== ANIMATED CAROUSEL INDICATORS ===== */
+#techStoreHero .carousel-indicators {
+    position: absolute;
+    bottom: 30px;
+    z-index: 15;
+    display: flex;
+    justify-content: center;
+    padding-left: 0;
+    margin-right: 15%;
+    margin-left: 15%;
+    list-style: none;
+}
+
+#techStoreHero .carousel-indicators [data-bs-target] {
     width: 12px;
     height: 12px;
     border-radius: 50%;
     margin: 0 5px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Inactive indicators - hover effect */
+#techStoreHero .carousel-indicators button:not(.active) {
+    transform: scale(1);
+}
+
+#techStoreHero .carousel-indicators button:not(.active):hover {
+    transform: scale(1.3);
+    background-color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);
+}
+
+/* Active indicator - animated pulse effect */
+#techStoreHero .carousel-indicators button.active {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4);
+    animation: indicatorPulse 2s infinite;
+}
+
+@keyframes indicatorPulse {
+    0% {
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.7), 0 0 30px rgba(255, 193, 7, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 193, 7, 0.9), 0 0 50px rgba(255, 193, 7, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.7), 0 0 30px rgba(255, 193, 7, 0.3);
+    }
+}
+
+/* Ripple/expanding circle effect on active indicator */
+#techStoreHero .carousel-indicators button.active::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 193, 7, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: indicatorRipple 2s infinite;
+}
+
+@keyframes indicatorRipple {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Indicators fade in on page load */
+#techStoreHero .carousel-indicators {
+    opacity: 0;
+    animation: indicatorsFadeIn 0.8s ease forwards;
+    animation-delay: 0.8s;
+}
+
+@keyframes indicatorsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Slide transition effects for indicators */
+#techStoreHero .carousel-indicators button {
+    opacity: 0.7;
+}
+
+#techStoreHero .carousel-indicators button.active {
+    opacity: 1;
 }
 
 /* Mobile Carousel Styles */

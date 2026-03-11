@@ -1,6 +1,6 @@
 <?php
 /**
- * TECHSTORE - Admin Categories List Responsive
+ * TECHSTORE - Admin Orders List Responsive
  */
 ?>
 
@@ -9,7 +9,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Catégories - TechStore Admin</title>
+    <title>Gestion des Commandes - TechStore Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,7 +66,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-    font-family: 'Times New Roman', Times, serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg-base);
     color: var(--text-primary);
     min-height: 100vh;
@@ -1214,7 +1214,7 @@ span.badge { display: inline-block !important; }
                     <i class="fas fa-box"></i>
                     <span>Produits</span>
                 </a>
-                <a href="<?= BASE_URL ?>/admin/orders" class="nav-item-custom">
+                <a href="<?= BASE_URL ?>/admin/orders" class="nav-item-custom active">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Commandes</span>
                 </a>
@@ -1222,7 +1222,7 @@ span.badge { display: inline-block !important; }
                     <i class="fas fa-users"></i>
                     <span>Utilisateurs</span>
                 </a>
-                <a href="<?= BASE_URL ?>/admin/categories" class="nav-item-custom active">
+                <a href="<?= BASE_URL ?>/admin/categories" class="nav-item-custom">
                     <i class="fas fa-tags"></i>
                     <span>Catégories</span>
                 </a>
@@ -1261,55 +1261,111 @@ span.badge { display: inline-block !important; }
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <div>
-                    <h2 class="fw-bold mb-1">Gestion des Catégories</h2>
-                    <p class="text-muted mb-0">Organisez vos produits par catégories</p>
+                    <h2 class="fw-bold mb-1">Gestion des Commandes</h2>
+                    <p class="text-muted mb-0">Suivez et gérez toutes les commandes</p>
                 </div>
-                <a href="<?= BASE_URL ?>/admin/categories/add" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    <span class="hide-mobile">Ajouter une catégorie</span>
-                </a>
             </div>
 
-            <!-- Categories Table -->
+            <!-- Filters -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="GET" action="<?= BASE_URL ?>/admin/orders" class="row g-2 g-md-3">
+                        <div class="col-12 col-md-3">
+                            <input type="text" name="search" placeholder="Rechercher..." 
+                                   value="<?= htmlspecialchars($search ?? '') ?>" class="form-control">
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <select name="status" class="form-select">
+                                <option value="">Statut</option>
+                                <option value="en_attente" <?= ($selectedStatus ?? '') === 'en_attente' ? 'selected' : '' ?>>En attente</option>
+                                <option value="confirme" <?= ($selectedStatus ?? '') === 'confirme' ? 'selected' : '' ?>>Confirmé</option>
+                                <option value="en_preparation" <?= ($selectedStatus ?? '') === 'en_preparation' ? 'selected' : '' ?>>Préparation</option>
+                                <option value="expedie" <?= ($selectedStatus ?? '') === 'expedie' ? 'selected' : '' ?>>Expédié</option>
+                                <option value="livre" <?= ($selectedStatus ?? '') === 'livre' ? 'selected' : '' ?>>Livré</option>
+                                <option value="annule" <?= ($selectedStatus ?? '') === 'annule' ? 'selected' : '' ?>>Annulé</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <input type="date" name="date_from" value="<?= $dateFrom ?? '' ?>" class="form-control" placeholder="Du">
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <input type="date" name="date_to" value="<?= $dateTo ?? '' ?>" class="form-control" placeholder="Au">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-2"></i> <span class="hide-mobile">Filtrer</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
             <div class="content-card">
                 <div class="card-body p-0">
-                    <?php if (!empty($categories)): ?>
+                    <?php if (!empty($orders)): ?>
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Nom</th>
-                                        <th class="d-none d-lg-table-cell">Slug</th>
-                                        <th>Produits</th>
-                                        <th class="d-none d-md-table-cell">Statut</th>
+                                        <th>N°</th>
+                                        <th class="d-none d-md-table-cell">Client</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                        <th class="d-none d-lg-table-cell">Paiement</th>
+                                        <th class="d-none d-sm-table-cell">Date</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($categories as $cat): ?>
+                                    <?php foreach ($orders as $order): ?>
                                     <tr>
-                                        <td><?= $cat['id'] ?></td>
-                                        <td class="fw-semibold"><?= htmlspecialchars($cat['name']) ?></td>
-                                        <td class="d-none d-lg-table-cell"><code class="px-2 py-1 rounded"><?= htmlspecialchars($cat['slug']) ?></code></td>
-                                        <td><span class="count-badge"><?= $cat['product_count'] ?? 0 ?></span></td>
+                                        <td class="fw-bold">#<?= $order['order_number'] ?? $order['id'] ?></td>
                                         <td class="d-none d-md-table-cell">
-                                            <?php if (($cat['is_active'] ?? 1) == 1): ?>
-                                                <span class="badge bg-success">Active</span>
-                                            <?php else: ?>
-                                                <span class="badge bg-secondary">Inactive</span>
-                                            <?php endif; ?>
+                                            <div class="fw-semibold"><?= htmlspecialchars($order['firstname'] . ' ' . $order['lastname']) ?></div>
+                                            <small class="text-muted"><?= htmlspecialchars($order['email']) ?></small>
                                         </td>
+                                        <td class="fw-bold text-success"><?= displayPrice($order['total_amount']) ?></td>
+                                        <td>
+                                            <?php
+                                            $statusConfig = [
+                                                'en_attente' => ['class' => 'bg-warning', 'label' => 'En attente'],
+                                                'confirme' => ['class' => 'bg-info', 'label' => 'Confirmé'],
+                                                'en_preparation' => ['class' => 'bg-primary', 'label' => 'Préparation'],
+                                                'expedie' => ['class' => 'bg-secondary', 'label' => 'Expédié'],
+                                                'livre' => ['class' => 'bg-success', 'label' => 'Livré'],
+                                                'annule' => ['class' => 'bg-danger', 'label' => 'Annulé']
+                                            ];
+                                            $status = $statusConfig[$order['status']] ?? ['class' => 'bg-warning', 'label' => $order['status']];
+                                            ?>
+                                            <span class="badge <?= $status['class'] ?>"><?= $status['label'] ?></span>
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            <?php
+                                            $paymentConfig = [
+                                                'pending' => ['class' => 'bg-warning', 'label' => 'En attente'],
+                                                'paid' => ['class' => 'bg-success', 'label' => 'Payé'],
+                                                'failed' => ['class' => 'bg-danger', 'label' => 'Échoué'],
+                                                'refunded' => ['class' => 'bg-info', 'label' => 'Remboursé']
+                                            ];
+                                            $payment = $paymentConfig[$order['payment_status']] ?? ['class' => 'bg-secondary', 'label' => $order['payment_status']];
+                                            ?>
+                                            <span class="badge <?= $payment['class'] ?>"><?= $payment['label'] ?></span>
+                                        </td>
+                                        <td class="d-none d-sm-table-cell"><?= date('d/m/Y', strtotime($order['created_at'])) ?></td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <a href="<?= BASE_URL ?>/admin/categories/edit/<?= $cat['id'] ?>" 
-                                                   class="btn btn-sm btn-outline-primary btn-action" title="Modifier">
-                                                    <i class="bi bi-pencil"></i>
+                                                <a href="<?= BASE_URL ?>/admin/orders/view/<?= $order['id'] ?>" 
+                                                   class="btn btn-sm btn-outline-primary btn-action" title="Voir">
+                                                    <i class="bi bi-eye"></i>
                                                 </a>
-                                                <a href="<?= BASE_URL ?>/admin/categories/delete/<?= $cat['id'] ?>" 
-                                                   class="btn btn-sm btn-outline-danger btn-action" title="Supprimer"
-                                                   onclick="return confirm('Êtes-vous sûr ?')">
-                                                    <i class="bi bi-trash"></i>
+                                                <a href="<?= BASE_URL ?>/admin/orders/generateInvoice/<?= $order['id'] ?>" 
+                                                   class="btn btn-sm btn-outline-warning btn-action d-none d-sm-inline-flex" title="Facture" target="_blank">
+                                                    <i class="bi bi-receipt"></i>
+                                                </a>
+                                                <a href="<?= BASE_URL ?>/admin/orders/generateDeliveryNote/<?= $order['id'] ?>" 
+                                                   class="btn btn-sm btn-outline-success btn-action d-none d-sm-inline-flex" title="Bon de livraison" target="_blank">
+                                                    <i class="bi bi-truck"></i>
                                                 </a>
                                             </div>
                                         </td>
@@ -1320,12 +1376,8 @@ span.badge { display: inline-block !important; }
                         </div>
                     <?php else: ?>
                         <div class="text-center py-5">
-                            <i class="bi bi-tags text-muted" style="font-size: 48px;"></i>
-                            <p class="text-muted mt-3">Aucune catégorie trouvée</p>
-                            <a href="<?= BASE_URL ?>/admin/categories/add" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-2"></i>
-                                Ajouter une catégorie
-                            </a>
+                            <i class="bi bi-bag text-muted" style="font-size: 48px;"></i>
+                            <p class="text-muted mt-3">Aucune commande trouvée</p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -1340,6 +1392,7 @@ span.badge { display: inline-block !important; }
             document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
         
+        // Close sidebar when clicking outside on mobile
         document.addEventListener('click', function(e) {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.querySelector('.mobile-menu-toggle');
@@ -1351,6 +1404,7 @@ span.badge { display: inline-block !important; }
             }
         });
         
+        // Handle window resize
         window.addEventListener('resize', function() {
             if (window.innerWidth > 991) {
                 document.getElementById('sidebar').classList.remove('show');
