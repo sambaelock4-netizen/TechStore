@@ -1,6 +1,6 @@
 <?php
 /**
- * TECHSTORE - Gestion des Catégories
+ * TECHSTORE - Logs d'activité
  */
 ?>
 <!DOCTYPE html>
@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catégories - TechStore Admin</title>
+    <title>Logs - TechStore Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,7 +29,7 @@
                 <a href="<?= BASE_URL ?>/admin/statistics" class="ts-nav-item"><i class="fas fa-chart-bar"></i><span>Statistiques</span></a>
                 <div class="ts-nav-section">Catalogue</div>
                 <a href="<?= BASE_URL ?>/admin/products" class="ts-nav-item"><i class="fas fa-box"></i><span>Produits</span></a>
-                <a href="<?= BASE_URL ?>/admin/categories" class="ts-nav-item active"><i class="fas fa-tags"></i><span>Catégories</span></a>
+                <a href="<?= BASE_URL ?>/admin/categories" class="ts-nav-item"><i class="fas fa-tags"></i><span>Catégories</span></a>
                 <a href="<?= BASE_URL ?>/admin/promotions" class="ts-nav-item"><i class="fas fa-percent"></i><span>Promotions</span></a>
                 <div class="ts-nav-section">Gestion</div>
                 <a href="<?= BASE_URL ?>/admin/orders" class="ts-nav-item"><i class="fas fa-shopping-cart"></i><span>Commandes</span></a>
@@ -47,76 +47,61 @@
         <main class="ts-main">
             <div class="ts-page-header">
                 <div>
-                    <h1 class="ts-page-title">Gestion des Catégories</h1>
-                    <p class="ts-page-subtitle">Organisez votre catalogue par catégories</p>
-                </div>
-                <div class="ts-page-actions">
-                    <a href="<?= BASE_URL ?>/admin/categories/add" class="ts-btn ts-btn-primary">
-                        <i class="fas fa-plus"></i> Nouvelle catégorie
-                    </a>
+                    <h1 class="ts-page-title">Logs d'activité</h1>
+                    <p class="ts-page-subtitle">Historique des actions effectuées dans le panneau admin</p>
                 </div>
             </div>
 
             <div class="ts-page-body">
                 <div class="ts-card">
                     <div class="ts-card-header">
-                        <div class="ts-card-title"><i class="fas fa-tags"></i> Liste des catégories</div>
-                        <?php if (!empty($categories)): ?>
-                        <span class="ts-badge ts-badge-primary"><?= count($categories) ?> catégorie(s)</span>
-                        <?php endif; ?>
+                        <div class="ts-card-title"><i class="fas fa-history"></i> Journal d'activité</div>
                     </div>
                     <div class="ts-card-body-flush">
-                        <?php if (!empty($categories)): ?>
+                        <?php if (!empty($logs)): ?>
                         <div class="ts-table-wrapper">
                             <table class="ts-table">
                                 <thead>
                                     <tr>
-                                        <th>Catégorie</th>
-                                        <th class="d-none d-md-table-cell">Description</th>
-                                        <th>Produits</th>
-                                        <th class="d-none d-md-table-cell">Statut</th>
-                                        <th>Actions</th>
+                                        <th>Date</th>
+                                        <th>Utilisateur</th>
+                                        <th>Action</th>
+                                        <th class="d-none d-md-table-cell">Détails</th>
+                                        <th class="d-none d-lg-table-cell">IP</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                <?php foreach ($categories as $cat): ?>
+                                <?php foreach ($logs as $log): ?>
                                 <tr>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:12px">
-                                            <?php if (!empty($cat['icon'])): ?>
-                                            <div style="width:38px;height:38px;border-radius:10px;background:var(--primary-bg);display:flex;align-items:center;justify-content:center;font-size:16px">
-                                                <i class="<?= htmlspecialchars($cat['icon']) ?>" style="color:var(--primary)"></i>
-                                            </div>
-                                            <?php endif; ?>
-                                            <div>
-                                                <div style="font-weight:600"><?= htmlspecialchars($cat['name']) ?></div>
-                                                <?php if (!empty($cat['slug'])): ?>
-                                                <small style="color:var(--text-muted)">/<?= htmlspecialchars($cat['slug']) ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="d-none d-md-table-cell" style="color:var(--text-muted);max-width:280px">
-                                        <?= htmlspecialchars(mb_strimwidth($cat['description'] ?? '—', 0, 80, '...')) ?>
+                                    <td style="color:var(--text-muted);white-space:nowrap;font-size:12.5px">
+                                        <?= date('d/m/Y H:i', strtotime($log['created_at'])) ?>
                                     </td>
                                     <td>
-                                        <span class="ts-badge ts-badge-primary">
-                                            <?= $cat['product_count'] ?? 0 ?> produit(s)
+                                        <span style="font-weight:600"><?= htmlspecialchars($log['user_name'] ?? '—') ?></span>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $actionColors = [
+                                            'create' => 'success', 'add' => 'success',
+                                            'update' => 'warning', 'edit' => 'warning',
+                                            'delete' => 'danger',  'remove' => 'danger',
+                                            'login'  => 'primary', 'logout' => 'neutral',
+                                        ];
+                                        $action = strtolower($log['action'] ?? '');
+                                        $color = 'neutral';
+                                        foreach ($actionColors as $k => $c) {
+                                            if (str_contains($action, $k)) { $color = $c; break; }
+                                        }
+                                        ?>
+                                        <span class="ts-badge ts-badge-<?= $color ?>">
+                                            <?= htmlspecialchars($log['action'] ?? '—') ?>
                                         </span>
                                     </td>
-                                    <td class="d-none d-md-table-cell">
-                                        <?php if (($cat['is_active'] ?? 1) == 1): ?>
-                                            <span class="ts-badge ts-badge-success">Active</span>
-                                        <?php else: ?>
-                                            <span class="ts-badge ts-badge-neutral">Inactive</span>
-                                        <?php endif; ?>
+                                    <td class="d-none d-md-table-cell" style="color:var(--text-muted);max-width:280px;font-size:12.5px">
+                                        <?= htmlspecialchars(mb_strimwidth($log['details'] ?? '—', 0, 100, '...')) ?>
                                     </td>
-                                    <td>
-                                        <div style="display:flex;gap:6px">
-                                            <a href="<?= BASE_URL ?>/admin/categories/edit/<?= $cat['id'] ?>" class="ts-action-btn ts-action-btn-edit" title="Modifier"><i class="bi bi-pencil"></i></a>
-                                            <a href="<?= BASE_URL ?>/admin/categories/delete/<?= $cat['id'] ?>" class="ts-action-btn ts-action-btn-delete" title="Supprimer"
-                                               onclick="return confirm('Supprimer cette catégorie ?')"><i class="bi bi-trash"></i></a>
-                                        </div>
+                                    <td class="d-none d-lg-table-cell" style="color:var(--text-muted);font-size:12px">
+                                        <?= htmlspecialchars($log['ip_address'] ?? '—') ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -125,11 +110,8 @@
                         </div>
                         <?php else: ?>
                         <div class="ts-table-empty">
-                            <i class="bi bi-tags"></i>
-                            Aucune catégorie créée
-                            <a href="<?= BASE_URL ?>/admin/categories/add" class="ts-btn ts-btn-primary" style="margin-top:14px">
-                                <i class="fas fa-plus"></i> Créer une catégorie
-                            </a>
+                            <i class="fas fa-history"></i>
+                            Aucun log disponible pour le moment
                         </div>
                         <?php endif; ?>
                     </div>
