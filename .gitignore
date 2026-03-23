@@ -1,0 +1,36 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment
+/.env
+/.env.local
+/.env.*.local
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# OS
+/.DS_Store
+/Thumbs.db
+
+# Logs
+/logs/
+*.log
+
+# Uploads (user files)
+/uploads/*
+
+# Database (optional - keep SQL files but not db data)
+/*.sqlite
+/*.db
+
+# Composer
+/composer.phar
+
+# NPM
+/npm-debug.log
+/yarn-error.log
