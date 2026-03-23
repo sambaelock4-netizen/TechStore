@@ -22,7 +22,9 @@
 *.log
 
 # Uploads (user files)
-/uploads/*
+# Uploads (user files)
+/public/uploads/*
+!/public/uploads/.gitkeep
 
 # Database (optional - keep SQL files but not db data)
 /*.sqlite
