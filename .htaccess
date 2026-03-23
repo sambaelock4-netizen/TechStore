@@ -1,0 +1,19 @@
+# TechStore URL Rewriting
+RewriteEngine On
+RewriteBase /TechStore/
+
+# Set the default index file
+DirectoryIndex index.php splash.php
+
+# Handle root URL - redirect to splash
+RewriteRule ^$ splash.php [L]
+
+# Allow direct access to splash files
+RewriteRule ^splash\.php$ - [L]
+RewriteRule ^admin_splash\.php$ - [L]
+RewriteRule ^router\.php$ - [L]
+
+# Route all requests through router.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ router.php?url=$1 [L,QSA]

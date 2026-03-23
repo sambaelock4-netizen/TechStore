@@ -1,0 +1,60 @@
+<?php
+/**
+ * TECHSTORE - Constants
+ * Configuration des constantes de l'application
+ */
+
+// URLs du site - Auto-detection pour acces local et IP
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$basePath = dirname($_SERVER['SCRIPT_NAME'] ?? '/TechStore');
+define('BASE_URL', $protocol . '://' . $host . $basePath);           // URL de base
+define('PUBLIC_URL', BASE_URL . '/public');                  // Dossier public
+define('UPLOAD_URL', PUBLIC_URL . '/uploads');                 // Dossier uploads
+
+// Chemins absolus
+define('ROOT_PATH', dirname(__DIR__));                         // Racine du projet
+define('APP_PATH', ROOT_PATH . '/app');                      // Dossier app
+define('PUBLIC_PATH', ROOT_PATH . '/public');                // Dossier public
+define('VIEW_PATH', ROOT_PATH . '/views');                   // Dossier views
+define('UPLOAD_PATH', PUBLIC_PATH . '/uploads');              // Dossier uploads
+define('CONFIG_PATH', ROOT_PATH . '/config');                // Dossier config
+
+// Informations du site
+define('SITE_NAME', 'TechStore');
+define('SITE_DESCRIPTION', 'Votre boutique d\'équipements informatiques');
+define('SITE_EMAIL', 'contact@techstore.com');
+define('SITE_PHONE', '+33 1 23 45 67 89');
+
+// Paramètres de pagination
+define('ITEMS_PER_PAGE', 12);                                // Produits par page
+define('ITEMS_PER_PAGE_ADMIN', 10);                          // Pour l'admin
+
+// Paramètres du panier
+define('CART_COOKIE_NAME', 'techstore_cart');
+define('CART_COOKIE_EXPIRY', 86400 * 30);                   // 30 jours
+
+// Messages d'erreur
+define('ERROR_404', 'Page introuvable');
+define('ERROR_500', 'Erreur serveur');
+
+// Formats de date
+define('DATE_FORMAT', 'd/m/Y');
+define('DATETIME_FORMAT', 'd/m/Y à H:i');
+
+// ── NotchPay ──
+define('NOTCHPAY_PUBLIC_KEY',  'pk_test.JHtFnsdbdVj0JwvZKoHB9g07pRH1I7FGyIURA2XXIuVvjoce0Xh455UZy0VSMST94sdquq3LgIBZarrc0lS6AcLq4pQeHUpIERuEDe8xMkCwfSanY4APGIVofHtWc');
+define('NOTCHPAY_SECRET_KEY',  'sk_test.1RLXuHZSOVDskBIwQkFcjXkSigQ54hT2VsDMpMKnQIpMkuuXL8AtkE6g2u8tZgYVruWobjPrpx2PUK5Sp1enl3lLDY4mZ1E7JyfyjOCzYlrVXv7ZrSsgrivLJaaKH');
+define('NOTCHPAY_API_URL',     'https://api.notchpay.co');
+define('NOTCHPAY_DEBUG',       false); // debug désactivé
+
+// Conversion EUR to CFA (XOF)
+define('EUR_TO_CFA', 655.957);
+
+/**
+ * Fonction pour afficher le prix en Francs CFA (Cameroun)
+ */
+function displayPrice($price_eur) {
+    $price_cfa = $price_eur * EUR_TO_CFA;
+    return number_format($price_cfa, 0, ',', ' ') . ' FC';
+}
