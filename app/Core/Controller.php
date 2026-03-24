@@ -17,6 +17,7 @@ class Controller {
      * Méthode pour render une vue
      */
     protected function render($view, $data = []) {
+        $data['pdo'] = $this->pdo;
         extract($data);
         $viewPath = $this->viewPath . $view;
         

@@ -161,6 +161,9 @@ switch ($page) {
             case 'stock':
                 $adminController->stock();
                 break;
+            case 'statistics':
+                $adminController->statistics();
+                break;
             case 'promotions':
                 $subAction = isset($url[2]) ? $url[2] : 'index';
                 $promoId = isset($url[3]) ? intval($url[3]) : null;

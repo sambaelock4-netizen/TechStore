@@ -190,10 +190,10 @@ function unsplashFallback($cat=''){
     <div class="ts-banner-text">
       <div class="ts-badge ts-badge-b" style="margin-bottom:16px;font-size:11px"><i class="fas fa-gamepad"></i> Collection Gaming 2026</div>
       <h2 class="ts-section-title" style="font-size:clamp(24px,3.5vw,38px);margin-bottom:14px">Performance<br>sans compromis</h2>
-      <p style="font-family:'Times New Roman',Times,serif;font-size:15px;color:#ffffff;margin-bottom:26px;line-height:1.85;text-shadow:0 1px 4px rgba(0,0,0,.5)">Cartes graphiques, processeurs et périphériques gaming sélectionnés par nos experts pour un setup digne des pros.</p>
+      <p class="ts-banner-desc">Cartes graphiques, processeurs et périphériques gaming sélectionnés par nos experts pour un setup digne des pros.</p>
       <div style="display:flex;gap:11px;flex-wrap:wrap">
         <a href="<?= BASE_URL ?>/catalogue?category=gaming" class="ts-btn ts-btn-p"><i class="fas fa-bolt"></i> Voir la collection</a>
-        <a href="<?= BASE_URL ?>/catalogue" class="ts-btn ts-btn-g"><i class="fas fa-th"></i> Tout le catalogue</a>
+        <a href="<?= BASE_URL ?>/catalogue" class="ts-btn ts-btn-o"><i class="fas fa-th"></i> Tout le catalogue</a>
       </div>
     </div>
     <div class="ts-banner-img">
@@ -300,11 +300,10 @@ function unsplashFallback($cat=''){
         $endTs = time() + rand(3600*6, 3600*24*7);
       ?>
       <div class="ts-pcard ts-pcard-promo reveal">
-        <?php if($p['discount']>0): ?><div style="position:absolute;top:11px;left:11px;z-index:5"><span class="ts-badge ts-badge-r" style="font-size:13px;padding:5px 14px">-<?=$p['discount']?>%</span></div><?php endif; ?>
-        <!-- Countdown timer -->
+        <!-- Countdown timer with integrated discount badge -->
         <div class="ts-countdown" data-end="<?= $endTs ?>">
-          <i class="fas fa-clock"></i>
-          <span class="ts-cd-text">Chargement…</span>
+          <?php if($p['discount']>0): ?><span class="ts-cd-badge">-<?=$p['discount']?>%</span><?php endif; ?>
+          <span class="ts-cd-right"><i class="fas fa-clock"></i> <span class="ts-cd-text">Chargement…</span></span>
         </div>
         <div class="ts-pimg"><a href="<?= BASE_URL ?>/product/<?=$p['id']?>"><img src="<?=htmlspecialchars($img)?>" alt="<?=htmlspecialchars($p['name'])?>"></a></div>
         <div class="ts-pbody">

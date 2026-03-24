@@ -3,6 +3,34 @@
  * TECHSTORE - Admin Dashboard
  */
 $adminName = isset($_SESSION['user']['firstname']) ? $_SESSION['user']['firstname'] : 'Admin';
+
+// 1. KPIs (Global totals or current month)
+$s = $pdo->query("SELECT COUNT(*) FROM products WHERE is_active=1");
+$stats['total_products'] = $s->fetchColumn();
+$s = $pdo->query("SELECT COUNT(*) FROM orders WHERE status != 'annule'");
+$stats['total_orders'] = $s->fetchColumn();
+$s = $pdo->query("SELECT COUNT(*) FROM users WHERE role='client'");
+$stats['total_users'] = $s->fetchColumn();
+$s = $pdo->query("SELECT SUM(total_amount) FROM orders WHERE status != 'annule'");
+$stats['total_revenue'] = $s->fetchColumn();
+
+// 2. Recent Orders (Last 8)
+$s = $pdo->query("SELECT o.*, u.firstname, u.lastname FROM orders o JOIN users u ON o.user_id=u.id ORDER BY o.created_at DESC LIMIT 8");
+$recentOrders = $s->fetchAll();
+
+// 3. Low Stock Alerts (Stock <= 5)
+$s = $pdo->query("SELECT id, name, stock, image FROM products WHERE stock <= 5 AND is_active=1 ORDER BY stock ASC LIMIT 5");
+$lowStock = $s->fetchAll();
+
+// 4. Sales Trend (Last 7 days)
+$trendLabels = []; $trendData = [];
+for($i=6; $i>=0; $i--){
+  $d = date('Y-m-d', strtotime("-$i days"));
+  $trendLabels[] = date('d/m', strtotime($d));
+  $s = $pdo->prepare("SELECT SUM(total_amount) FROM orders WHERE DATE(created_at) = ? AND status != 'annule'");
+  $s->execute([$d]);
+  $trendData[] = (float)($s->fetchColumn() ?? 0);
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -94,39 +122,59 @@ $adminName = isset($_SESSION['user']['firstname']) ? $_SESSION['user']['firstnam
                 <!-- Stats Cards -->
                 <div class="ts-stats-grid">
                     <div class="ts-stat-card">
-                        <div class="ts-stat-icon" style="background:var(--primary-bg); color:var(--primary)">
-                            <i class="bi bi-box-seam"></i>
-                        </div>
-                        <div>
-                            <div class="ts-stat-label">Produits</div>
-                            <div class="ts-stat-value"><?= $stats['total_products'] ?? 0 ?></div>
-                        </div>
+                        <div class="ts-stat-icon" style="background:var(--primary-bg); color:var(--primary)"><i class="fas fa-boxes"></i></div>
+                        <div><div class="ts-stat-label">Produits actifs</div><div class="ts-stat-value"><?= number_format($stats['total_products']) ?></div></div>
                     </div>
                     <div class="ts-stat-card">
-                        <div class="ts-stat-icon" style="background:var(--purple-bg); color:var(--purple)">
-                            <i class="bi bi-bag-check"></i>
-                        </div>
-                        <div>
-                            <div class="ts-stat-label">Commandes</div>
-                            <div class="ts-stat-value"><?= $stats['total_orders'] ?? 0 ?></div>
-                        </div>
+                        <div class="ts-stat-icon" style="background:var(--purple-bg); color:var(--purple)"><i class="fas fa-shopping-bag"></i></div>
+                        <div><div class="ts-stat-label">Total commandes</div><div class="ts-stat-value"><?= number_format($stats['total_orders']) ?></div></div>
                     </div>
                     <div class="ts-stat-card">
-                        <div class="ts-stat-icon" style="background:var(--success-bg); color:var(--success)">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div>
-                            <div class="ts-stat-label">Clients</div>
-                            <div class="ts-stat-value"><?= $stats['total_users'] ?? 0 ?></div>
-                        </div>
+                        <div class="ts-stat-icon" style="background:var(--success-bg); color:var(--success)"><i class="fas fa-users"></i></div>
+                        <div><div class="ts-stat-label">Total clients</div><div class="ts-stat-value"><?= number_format($stats['total_users']) ?></div></div>
                     </div>
                     <div class="ts-stat-card">
-                        <div class="ts-stat-icon" style="background:var(--warning-bg); color:var(--warning)">
-                            <i class="bi bi-currency-dollar"></i>
+                        <div class="ts-stat-icon" style="background:var(--warning-bg); color:var(--warning)"><i class="fas fa-coins"></i></div>
+                        <div><div class="ts-stat-label">Chiffre d'affaires</div><div class="ts-stat-value" style="font-size:18px"><?= displayPrice($stats['total_revenue']) ?></div></div>
+                    </div>
+                </div>
+
+                <div class="row g-4" style="margin-top:0">
+                    <!-- Tendances (7 jours) -->
+                    <div class="col-lg-8">
+                        <div class="ts-card" style="height:100%">
+                            <div class="ts-card-header">
+                                <div class="ts-card-title"><i class="fas fa-chart-line"></i> Tendance des ventes (7 derniers jours)</div>
+                            </div>
+                            <div class="ts-card-body">
+                                <div style="height:250px"><canvas id="trendChart"></canvas></div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="ts-stat-label">Revenus</div>
-                            <div class="ts-stat-value" style="font-size:18px"><?= displayPrice($stats['total_revenue'] ?? 0) ?></div>
+                    </div>
+
+                    <!-- Alertes Stock -->
+                    <div class="col-lg-4">
+                        <div class="ts-card" style="height:100%">
+                            <div class="ts-card-header">
+                                <div class="ts-card-title"><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> Alertes Stock</div>
+                                <a href="<?= BASE_URL ?>/admin/stock" class="ts-btn ts-btn-secondary ts-btn-sm" style="font-size:10px">Gérer</a>
+                            </div>
+                            <div class="ts-card-body-flush">
+                                <?php if(!empty($lowStock)): foreach($lowStock as $ls): ?>
+                                <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border-light)">
+                                    <div style="width:36px;height:36px;background:#f8f9fa;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                                        <?php if($ls['image']): ?><img src="<?=UPLOAD_URL.'/'.$ls['image']?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><i class="fas fa-image" style="color:#dee2e6"></i><?php endif; ?>
+                                    </div>
+                                    <div style="flex:1">
+                                        <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.2;margin-bottom:2px"><?=htmlspecialchars($ls['name'])?></div>
+                                        <div style="font-size:10px;color:var(--text-muted)">ID: #<?=$ls['id']?></div>
+                                    </div>
+                                    <span class="ts-badge <?=$ls['stock']<=0?'ts-badge-danger':'ts-badge-warning'?>" style="font-size:10px"><?=$ls['stock']?> restants</span>
+                                </div>
+                                <?php endforeach; else: ?>
+                                <div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:12px;font-style:italic">Aucune alerte stock</div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -230,16 +278,45 @@ $adminName = isset($_SESSION['user']['firstname']) ? $_SESSION['user']['firstnam
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     (function(){
-        const sidebar = document.querySelector('.ts-sidebar');
-        const overlay = document.querySelector('.ts-overlay');
-        const toggle  = document.querySelector('.ts-mobile-toggle');
-        function open(){ sidebar.classList.add('open'); overlay.classList.add('open'); }
+        const sidebar = document.querySelector('.ts-sidebar'), overlay = document.querySelector('.ts-overlay'), toggle  = document.querySelector('.ts-mobile-toggle');
         function close(){ sidebar.classList.remove('open'); overlay.classList.remove('open'); }
-        toggle.addEventListener('click', function(){ sidebar.classList.contains('open') ? close() : open(); });
+        toggle.addEventListener('click', function(){ sidebar.classList.contains('open') ? close() : (sidebar.classList.add('open'),overlay.classList.add('open')); });
         overlay.addEventListener('click', close);
         window.addEventListener('resize', function(){ if(window.innerWidth > 991) close(); });
+
+        // Trend Chart
+        const ctx = document.getElementById('trendChart')?.getContext('2d');
+        if(ctx){
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: <?= json_encode($trendLabels) ?>,
+                    datasets: [{
+                        label: 'Ventes',
+                        data: <?= json_encode($trendData) ?>,
+                        borderColor: '#ffa07a',
+                        backgroundColor: 'rgba(255,160,122,0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#ffa07a',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
     })();
     </script>
 </body>

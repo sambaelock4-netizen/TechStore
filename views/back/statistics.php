@@ -2,6 +2,104 @@
 /**
  * TECHSTORE - Statistiques & Rapports
  */
+$period = $_GET['period'] ?? 'month';
+$dateFrom = $_GET['date_from'] ?? null;
+$dateTo = $_GET['date_to'] ?? null;
+
+// Définition des clauses de date
+$where = "orders.status != 'annule'";
+$pWhere = "orders.status != 'annule'"; // Previous period
+$uWhere = "users.role = 'client'";
+$puWhere = "users.role = 'client'";
+
+switch($period){
+  case 'today':
+    $where .= " AND DATE(orders.created_at) = CURDATE()";
+    $pWhere .= " AND DATE(orders.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+    $uWhere .= " AND DATE(users.created_at) = CURDATE()";
+    $puWhere .= " AND DATE(users.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+    break;
+  case 'week':
+    $where .= " AND orders.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    $pWhere .= " AND orders.created_at >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND orders.created_at < DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    $uWhere .= " AND users.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    $puWhere .= " AND users.created_at >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND users.created_at < DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    break;
+  case 'year':
+    $where .= " AND YEAR(orders.created_at) = YEAR(CURDATE())";
+    $pWhere .= " AND YEAR(orders.created_at) = YEAR(CURDATE()) - 1";
+    $uWhere .= " AND YEAR(users.created_at) = YEAR(CURDATE())";
+    $puWhere .= " AND YEAR(users.created_at) = YEAR(CURDATE()) - 1";
+    break;
+  case 'month':
+  default:
+    $where .= " AND MONTH(orders.created_at) = MONTH(CURDATE()) AND YEAR(orders.created_at) = YEAR(CURDATE())";
+    $pWhere .= " AND MONTH(orders.created_at) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(orders.created_at) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))";
+    $uWhere .= " AND MONTH(users.created_at) = MONTH(CURDATE()) AND YEAR(users.created_at) = YEAR(CURDATE())";
+    $puWhere .= " AND MONTH(users.created_at) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(users.created_at) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))";
+    break;
+}
+
+// 1. KPI Actuels
+$s = $pdo->query("SELECT SUM(total_amount) as rev, COUNT(*) as ord FROM orders WHERE $where");
+$curr = $s->fetch();
+$s = $pdo->query("SELECT COUNT(*) as cust FROM users WHERE $uWhere");
+$currCust = $s->fetch()['cust'];
+
+// 2. KPI Précédents (pour le calcul de progression)
+$s = $pdo->query("SELECT SUM(total_amount) as rev, COUNT(*) as ord FROM orders WHERE $pWhere");
+$prev = $s->fetch();
+$s = $pdo->query("SELECT COUNT(*) as cust FROM users WHERE $puWhere");
+$prevCust = $s->fetch()['cust'];
+
+function pct($c, $p){ if(!$p) return $c?100:0; return round((($c-$p)/$p)*100); }
+
+$stats = [
+  'total_revenue' => $curr['rev'] ?? 0,
+  'total_orders' => $curr['ord'] ?? 0,
+  'new_customers' => $currCust,
+  'avg_order_value' => $curr['ord'] ? ($curr['rev']/$curr['ord']) : 0,
+  'revenue_change' => pct($curr['rev']??0, $prev['rev']??0),
+  'orders_change' => pct($curr['ord']??0, $prev['ord']??0),
+  'customers_change' => pct($currCust, $prevCust),
+  'avg_change' => pct($curr['ord']?($curr['rev']/$curr['ord']):0, $prev['ord']?($prev['rev']/$prev['ord']):0)
+];
+
+// 3. Évolution des ventes (7 derniers jours)
+$salesLabels = []; $salesData = []; $ordersData = [];
+for($i=6; $i>=0; $i--){
+  $d = date('Y-m-d', strtotime("-$i days"));
+  $salesLabels[] = date('d/m', strtotime($d));
+  $s = $pdo->prepare("SELECT SUM(total_amount) as rev, COUNT(*) as ord FROM orders WHERE DATE(created_at) = ? AND status != 'annule'");
+  $s->execute([$d]);
+  $r = $s->fetch();
+  $salesData[] = (float)($r['rev']??0);
+  $ordersData[] = (int)($r['ord']??0);
+}
+
+// 4. Par catégorie
+$s = $pdo->query("SELECT c.name, SUM(oi.quantity * oi.unit_price) as rev FROM order_items oi JOIN products p ON oi.product_id=p.id JOIN categories c ON p.category_id=c.id JOIN orders ON oi.order_id=orders.id WHERE $where GROUP BY c.id ORDER BY rev DESC LIMIT 5");
+$catStats = $s->fetchAll();
+$categoryLabels = array_column($catStats, 'name');
+$categoryData = array_column($catStats, 'rev');
+
+// 5. Produits les plus vendus
+$s = $pdo->query("SELECT p.name, c.name as category_name, SUM(oi.quantity) as quantity_sold, SUM(oi.quantity * oi.unit_price) as revenue FROM order_items oi JOIN products p ON oi.product_id=p.id LEFT JOIN categories c ON p.category_id=c.id JOIN orders ON oi.order_id=orders.id WHERE $where GROUP BY p.id ORDER BY quantity_sold DESC LIMIT 10");
+$topProducts = $s->fetchAll();
+
+// 6. Ventes par jour de semaine
+$dailyData = [0,0,0,0,0,0,0]; // Lun=0, ..., Dim=6
+$s = $pdo->query("SELECT WEEKDAY(created_at) as wd, SUM(total_amount) as rev FROM orders WHERE $where GROUP BY wd");
+while($r = $s->fetch()) $dailyData[$r['wd']] = (float)$r['rev'];
+
+// 7. Meilleurs clients
+$s = $pdo->query("SELECT u.firstname, u.lastname, u.email, COUNT(o.id) as order_count, SUM(o.total_amount) as total_spent FROM users u JOIN orders o ON u.id=o.user_id WHERE o.status != 'annule' GROUP BY u.id ORDER BY total_spent DESC LIMIT 5");
+$topCustomers = $s->fetchAll();
+
+// 8. Statuts des commandes
+$statusCounts = [];
+$s = $pdo->query("SELECT status, COUNT(*) as count FROM orders WHERE $where GROUP BY status");
+while($r = $s->fetch()) $statusCounts[$r['status']] = $r['count'];
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -244,10 +342,12 @@
                         ?>
                         <tr>
                             <td>
-                                <?php if($i===0) echo '<span style="font-size:20px">🥇</span>';
-                                elseif($i===1) echo '<span style="font-size:20px">🥈</span>';
-                                elseif($i===2) echo '<span style="font-size:20px">🥉</span>';
-                                else: ?><span class="ts-rank"><?= $i+1 ?></span><?php endif; ?>
+                                <?php 
+                                if($i===0) { echo '<span style="font-size:20px">🥇</span>'; }
+                                elseif($i===1) { echo '<span style="font-size:20px">🥈</span>'; }
+                                elseif($i===2) { echo '<span style="font-size:20px">🥉</span>'; }
+                                else { echo '<span class="ts-rank">'.($i+1).'</span>'; }
+                                ?>
                             </td>
                             <td>
                                 <div style="font-weight:700;color:var(--text)"><?= htmlspecialchars($p['name']) ?></div>

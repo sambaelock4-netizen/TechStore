@@ -17,10 +17,7 @@ class AdminController extends Controller {
     
     public function index() {
         try {
-            $totalProducts = 0;
-            $totalOrders = 0;
-            $totalUsers = 0;
-            $totalRevenue = 0;
+            $totalProducts = 0; $totalOrders = 0; $totalUsers = 0; $totalRevenue = 0;
             
             try {
                 $stmt = $this->pdo->query("SELECT COUNT(*) FROM products WHERE is_active = 1");
@@ -56,7 +53,7 @@ class AdminController extends Controller {
                     FROM orders o 
                     LEFT JOIN users u ON o.user_id = u.id 
                     ORDER BY o.created_at DESC 
-                    LIMIT 5
+                    LIMIT 8
                 ");
                 $recentOrders = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
             } catch (Exception $e) { $recentOrders = []; }
@@ -68,15 +65,14 @@ class AdminController extends Controller {
             
         } catch (Exception $e) {
             $this->render('/back/index.php', [
-                'stats' => [
-                    'total_products' => 0,
-                    'total_orders' => 0,
-                    'total_users' => 0,
-                    'total_revenue' => 0
-                ],
+                'stats' => ['total_products'=>0,'total_orders'=>0,'total_users'=>0,'total_revenue'=>0],
                 'recentOrders' => []
             ]);
         }
+    }
+
+    public function statistics() {
+        $this->render('/back/statistics.php');
     }
     
     // ==================== PRODUITS ====================
