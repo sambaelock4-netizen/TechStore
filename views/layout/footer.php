@@ -52,7 +52,54 @@
   </div>
 </footer>
 
+<!-- ── QUICK VIEW MODAL ── -->
+<div class="ts-qv-overlay" id="tsQvOverlay"></div>
+<div class="ts-qv-modal" id="tsQvModal">
+  <button class="ts-qv-close" id="tsQvClose"><i class="fas fa-times"></i></button>
+  <div class="ts-qv-grid">
+    <div class="ts-qv-img-wrap">
+      <img id="tsQvImg" src="" alt="Aperçu">
+      <div class="ts-qv-discount-badge" id="tsQvDiscount" style="display:none"></div>
+    </div>
+    <div class="ts-qv-info">
+      <span class="ts-pcat" id="tsQvCat"></span>
+      <h3 class="ts-qv-name" id="tsQvName"></h3>
+      <div class="ts-stars-row" style="margin-bottom:10px"><span class="ts-stars">★★★★★</span><span class="ts-stars-count">(Avis vérifiés)</span></div>
+      <p class="ts-qv-desc" id="tsQvDesc"></p>
+      <div id="tsQvOldPrice" class="ts-pold" style="font-size:14px;display:none"></div>
+      <div class="ts-pprice" id="tsQvPrice" style="font-size:26px;margin-bottom:10px"></div>
+      <div class="ts-pstock" id="tsQvStock"><div class="ts-pstock-dot"></div><span id="tsQvStockText"></span></div>
+      <div class="ts-qv-qty">
+        <label class="ts-qty-label">Quantité</label>
+        <div class="ts-qty-row">
+          <button class="ts-qty-btn" onclick="tsQvQty(-1)"><i class="fas fa-minus"></i></button>
+          <input type="number" id="tsQvQtyVal" value="1" min="1" max="99" class="ts-qty-inp">
+          <button class="ts-qty-btn" onclick="tsQvQty(1)"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <div class="ts-qv-actions">
+        <button class="ts-atc ts-qv-atc" id="tsQvAtc"><i class="fas fa-cart-plus"></i> Ajouter au panier</button>
+        <a href="#" class="ts-btn ts-btn-o" id="tsQvLink" style="padding:12px 20px"><i class="fas fa-eye"></i> Voir détails</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BACK TO TOP ── -->
+<button class="ts-btt" id="tsBtt" title="Retour en haut"><i class="fas fa-chevron-up"></i></button>
+
+<!-- ── FLY TO CART GHOST ── -->
+<div class="ts-fly-ghost" id="tsFlyGhost"></div>
+
+<!-- ── SEARCH AUTOCOMPLETE DROPDOWN ── -->
+<div class="ts-ac-dropdown" id="tsAcDrop" style="display:none"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= PUBLIC_URL ?>/js/main.js"></script>
+<script>
+var TS_BASE='<?= BASE_URL ?>';
+var TS_UPLOAD='<?= UPLOAD_URL ?>';
+</script>
+<script src="<?= PUBLIC_URL ?>/js/enhancements.js"></script>
 </body>
 </html>

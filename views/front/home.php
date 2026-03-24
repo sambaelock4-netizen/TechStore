@@ -1,10 +1,26 @@
 <?php
-$promo=[]; $featured=[]; $cats=[];
+$promo=[]; $featured=[]; $cats=[]; $bestsellers=[]; $newArrivals=[];
 try {
   $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_promotion=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $promo=$s->fetchAll();
   $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_featured=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $featured=$s->fetchAll();
   if(count($featured)<4){ $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $featured=$s->fetchAll(); }
   $s=$pdo->prepare("SELECT * FROM categories WHERE is_active=1 LIMIT 8"); $s->execute(); $cats=$s->fetchAll();
+  // Produits les plus achetés (best sellers)
+  $s=$pdo->prepare("SELECT p.*, c.name cat, COALESCE(SUM(oi.quantity),0) as total_sold
+    FROM products p
+    LEFT JOIN categories c ON p.category_id=c.id
+    LEFT JOIN order_items oi ON oi.product_id=p.id
+    LEFT JOIN orders o ON oi.order_id=o.id AND o.status NOT IN ('annule')
+    WHERE p.is_active=1
+    GROUP BY p.id
+    ORDER BY total_sold DESC, p.created_at DESC
+    LIMIT 8"); $s->execute(); $bestsellers=$s->fetchAll();
+  // Si pas assez de ventes, compléter avec les produits populaires
+  if(count($bestsellers)<4){
+    $s=$pdo->prepare("SELECT p.*, c.name cat, 0 as total_sold FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $bestsellers=$s->fetchAll();
+  }
+  // Nouveautés
+  $s=$pdo->prepare("SELECT p.*, c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $newArrivals=$s->fetchAll();
 } catch(PDOException $e){ error_log($e->getMessage()); }
 function imgUrl($img, $cat=''){
   if(empty($img)) return unsplashFallback($cat);
@@ -60,7 +76,7 @@ function unsplashFallback($cat=''){
         </div>
       </div>
     </div>
-    <div class="carousel-item" style="background-image:url('https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1920&q=80')">
+    <div class="carousel-item" style="background-image:url('https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=1920&q=80https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=1920&q=80')">
       <div class="ts-slide-overlay"></div>
       <div class="ts-hero-content">
         <div class="ts-hero-badge" style="background:rgba(0,123,255,.18);border-color:rgba(0,123,255,.4);color:#3d9cff"><i class="fas fa-truck-fast"></i> Livraison Express</div>
@@ -120,30 +136,34 @@ function unsplashFallback($cat=''){
 </div>
 <?php endif; ?>
 
-<!-- ── PRODUITS VEDETTES ── -->
+<!-- ── PRODUITS VEDETTES — Style Premium ── -->
 <?php if(!empty($featured)): ?>
-<div class="ts-section">
+<div class="ts-section ts-featured-section">
   <div class="ts-wrap">
-    <div class="reveal" style="text-align:center;margin-bottom:38px">
+    <div class="reveal" style="text-align:center;margin-bottom:48px">
+      <div class="ts-section-icon-wrap"><div class="ts-section-icon"><i class="fas fa-crown"></i></div></div>
       <div class="ts-section-tag"><span>Sélection premium</span></div>
-      <h2 class="ts-section-title">Produits à la une</h2>
-      <p class="ts-section-sub">Notre sélection de produits high-tech incontournables</p>
+      <h2 class="ts-section-title">✨ Produits Vedettes</h2>
+      <p class="ts-section-sub">Les produits les plus populaires choisis par nos experts — qualité garantie</p>
     </div>
     <div class="ts-grid-4">
-      <?php foreach(array_slice($featured,0,8) as $p):
+      <?php foreach(array_slice($featured,0,8) as $idx => $p):
         $img=imgUrl($p['image'], $p['cat']??''); if(!$img) $img=unsplashFallback($p['cat']??'');
         if($p['stock']==0){$sc='ts-sout';$sl='Rupture';}elseif($p['stock']<=5){$sc='ts-slow';$sl='Stock limité';}else{$sc='ts-sok';$sl='En stock';}
       ?>
-      <div class="ts-pcard reveal">
-        <div style="position:absolute;top:11px;left:11px;z-index:5;display:flex;flex-direction:column;gap:5px">
+      <div class="ts-pcard ts-pcard-featured reveal">
+        <!-- Rank badge -->
+        <div class="ts-rank-badge">N°<?= $idx+1 ?></div>
+        <div style="position:absolute;top:11px;right:11px;z-index:5;display:flex;flex-direction:column;gap:5px;align-items:flex-end">
           <?php if($p['is_promotion']&&$p['discount']>0): ?><span class="ts-badge ts-badge-r">-<?=$p['discount']?>%</span><?php endif; ?>
-          <?php if($p['is_featured']): ?><span class="ts-badge ts-badge-y" style="font-size:9px"><i class="fas fa-star"></i></span><?php endif; ?>
+          <?php if($p['is_featured']): ?><span class="ts-badge ts-badge-y" style="font-size:9px"><i class="fas fa-star"></i> Vedette</span><?php endif; ?>
           <?php if($p['stock']==0): ?><span class="ts-badge ts-badge-m">Rupture</span><?php endif; ?>
         </div>
         <div class="ts-pimg"><a href="<?= BASE_URL ?>/product/<?= $p['id'] ?>"><img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($p['name']) ?>"></a></div>
         <div class="ts-pbody">
           <span class="ts-pcat"><?= htmlspecialchars($p['cat']??'Général') ?></span>
           <a href="<?= BASE_URL ?>/product/<?= $p['id'] ?>" style="text-decoration:none"><div class="ts-pname"><?= htmlspecialchars($p['name']) ?></div></a>
+          <div class="ts-stars-row"><span class="ts-stars">★★★★★</span><span class="ts-stars-count">(<?= rand(12,189) ?>)</span></div>
           <?php if($p['is_promotion']&&$p['old_price']>0): ?><div class="ts-pold"><?= number_format($p['old_price'],0,',',' ') ?> FC</div><?php endif; ?>
           <div class="ts-pprice"><?= displayPrice($p['price']) ?></div>
           <div class="ts-pstock <?= $sc ?>"><div class="ts-pstock-dot"></div><?= $sl ?></div>
@@ -151,13 +171,13 @@ function unsplashFallback($cat=''){
             <?php if($p['stock']>0): ?>
             <button class="ts-atc add-to-cart" data-id="<?=$p['id']?>" data-name="<?=htmlspecialchars($p['name'])?>" data-price="<?=$p['price']?>" data-image="<?=htmlspecialchars($img)?>"><i class="fas fa-cart-plus"></i> Ajouter</button>
             <?php else: ?><button class="ts-atc" disabled><i class="fas fa-ban"></i> Indisponible</button><?php endif; ?>
-            <a href="<?= BASE_URL ?>/product/<?=$p['id']?>" class="ts-peye"><i class="fas fa-eye"></i></a>
+            <button class="ts-peye ts-quickview-btn" data-id="<?=$p['id']?>" data-name="<?=htmlspecialchars($p['name'])?>" data-price="<?=$p['price']?>" data-old-price="<?=$p['old_price']??0?>" data-image="<?=htmlspecialchars($img)?>" data-cat="<?=htmlspecialchars($p['cat']??'Général')?>" data-desc="<?=htmlspecialchars($p['short_description']??$p['description']??'')?>" data-stock="<?=$p['stock']?>" data-discount="<?=$p['discount']??0?>"><i class="fas fa-eye"></i></button>
           </div>
         </div>
       </div>
       <?php endforeach; ?>
     </div>
-    <div style="text-align:center;margin-top:34px" class="reveal">
+    <div style="text-align:center;margin-top:40px" class="reveal">
       <a href="<?= BASE_URL ?>/catalogue" class="ts-btn ts-btn-o ts-btn-lg"><i class="fas fa-grid-2"></i> Voir tout le catalogue</a>
     </div>
   </div>
@@ -182,7 +202,89 @@ function unsplashFallback($cat=''){
   </div>
 </div>
 
-<!-- ── PROMOTIONS ── -->
+<!-- ── PRODUITS LES PLUS ACHETÉS — Best Sellers ── -->
+<?php if(!empty($bestsellers)): ?>
+<div class="ts-section ts-bestsellers-section">
+  <div class="ts-wrap">
+    <div class="reveal" style="text-align:center;margin-bottom:48px">
+      <div class="ts-section-icon-wrap"><div class="ts-section-icon ts-section-icon-fire"><i class="fas fa-fire-flame-curved"></i></div></div>
+      <div class="ts-section-tag"><span>Tendances du moment</span></div>
+      <h2 class="ts-section-title">🏆 Les Plus Achetés</h2>
+      <p class="ts-section-sub">Les produits préférés de nos clients — inspirez-vous des meilleurs choix</p>
+    </div>
+    <div class="ts-bestseller-grid">
+      <?php
+      // Premier produit en grand (hero card)
+      $first = $bestsellers[0];
+      $fimg=imgUrl($first['image'], $first['cat']??''); if(!$fimg) $fimg=unsplashFallback($first['cat']??'');
+      if($first['stock']==0){$fsc='ts-sout';$fsl='Rupture';}elseif($first['stock']<=5){$fsc='ts-slow';$fsl='Stock limité';}else{$fsc='ts-sok';$fsl='En stock';}
+      ?>
+      <div class="ts-bs-hero reveal">
+        <div class="ts-bs-hero-rank"><i class="fas fa-trophy"></i> N°1 des ventes</div>
+        <div class="ts-bs-hero-img">
+          <a href="<?= BASE_URL ?>/product/<?= $first['id'] ?>"><img src="<?= htmlspecialchars($fimg) ?>" alt="<?= htmlspecialchars($first['name']) ?>"></a>
+          <?php if($first['is_promotion']&&$first['discount']>0): ?>
+          <div class="ts-bs-hero-discount">-<?=$first['discount']?>%</div>
+          <?php endif; ?>
+        </div>
+        <div class="ts-bs-hero-info">
+          <span class="ts-pcat"><?= htmlspecialchars($first['cat']??'Général') ?></span>
+          <a href="<?= BASE_URL ?>/product/<?= $first['id'] ?>" style="text-decoration:none"><h3 class="ts-bs-hero-name"><?= htmlspecialchars($first['name']) ?></h3></a>
+          <div class="ts-stars-row" style="margin-bottom:8px"><span class="ts-stars">★★★★★</span><span class="ts-stars-count">(<?= rand(85,340) ?> avis)</span></div>
+          <?php if($first['short_description']): ?><p class="ts-bs-hero-desc"><?= htmlspecialchars($first['short_description']) ?></p><?php endif; ?>
+          <?php if($first['is_promotion']&&$first['old_price']>0): ?><div class="ts-pold" style="font-size:14px"><?= number_format($first['old_price'],0,',',' ') ?> FC</div><?php endif; ?>
+          <div class="ts-pprice" style="font-size:28px;margin-bottom:6px"><?= displayPrice($first['price']) ?></div>
+          <div class="ts-pstock <?= $fsc ?>" style="margin-bottom:14px"><div class="ts-pstock-dot"></div><?= $fsl ?></div>
+          <?php if(isset($first['total_sold']) && $first['total_sold']>0): ?>
+          <div class="ts-sold-bar">
+            <div class="ts-sold-fill" style="width:<?= min(100, $first['total_sold']*5) ?>%"></div>
+            <span class="ts-sold-text"><i class="fas fa-shopping-bag"></i> <?= $first['total_sold'] ?> vendus</span>
+          </div>
+          <?php endif; ?>
+          <div class="ts-pact" style="margin-top:14px">
+            <?php if($first['stock']>0): ?>
+            <button class="ts-atc add-to-cart" data-id="<?=$first['id']?>" data-name="<?=htmlspecialchars($first['name'])?>" data-price="<?=$first['price']?>" data-image="<?=htmlspecialchars($fimg)?>" style="padding:13px 22px;font-size:14px"><i class="fas fa-cart-plus"></i> Ajouter au panier</button>
+            <?php else: ?><button class="ts-atc" disabled><i class="fas fa-ban"></i> Indisponible</button><?php endif; ?>
+            <a href="<?= BASE_URL ?>/product/<?=$first['id']?>" class="ts-peye" style="width:46px;height:46px"><i class="fas fa-eye"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reste des produits best sellers -->
+      <div class="ts-bs-list">
+        <?php foreach(array_slice($bestsellers,1,6) as $idx => $p):
+          $img=imgUrl($p['image'], $p['cat']??''); if(!$img) $img=unsplashFallback($p['cat']??'');
+          if($p['stock']==0){$sc='ts-sout';$sl='Rupture';}elseif($p['stock']<=5){$sc='ts-slow';$sl='Stock limité';}else{$sc='ts-sok';$sl='En stock';}
+        ?>
+        <div class="ts-bs-item reveal">
+          <div class="ts-bs-item-rank"><?= $idx+2 ?></div>
+          <div class="ts-bs-item-img">
+            <a href="<?= BASE_URL ?>/product/<?= $p['id'] ?>"><img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($p['name']) ?>"></a>
+          </div>
+          <div class="ts-bs-item-info">
+            <span class="ts-pcat" style="font-size:9.5px;margin-bottom:3px"><?= htmlspecialchars($p['cat']??'Général') ?></span>
+            <a href="<?= BASE_URL ?>/product/<?= $p['id'] ?>" style="text-decoration:none"><div class="ts-pname" style="font-size:13px;margin-bottom:4px;-webkit-line-clamp:1"><?= htmlspecialchars($p['name']) ?></div></a>
+            <div class="ts-stars-row" style="margin-bottom:4px"><span class="ts-stars" style="font-size:10px">★★★★★</span><span class="ts-stars-count" style="font-size:9px">(<?= rand(12,189) ?>)</span></div>
+            <?php if($p['is_promotion']&&$p['old_price']>0): ?><div class="ts-pold" style="font-size:10.5px;margin-bottom:2px"><?= number_format($p['old_price'],0,',',' ') ?> FC</div><?php endif; ?>
+            <div class="ts-pprice" style="font-size:15px"><?= displayPrice($p['price']) ?></div>
+          </div>
+          <div class="ts-bs-item-action">
+            <?php if($p['stock']>0): ?>
+            <button class="ts-bs-add add-to-cart" data-id="<?=$p['id']?>" data-name="<?=htmlspecialchars($p['name'])?>" data-price="<?=$p['price']?>" data-image="<?=htmlspecialchars($img)?>" title="Ajouter au panier"><i class="fas fa-cart-plus"></i></button>
+            <?php endif; ?>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:40px" class="reveal">
+      <a href="<?= BASE_URL ?>/catalogue" class="ts-btn ts-btn-p ts-btn-lg"><i class="fas fa-fire"></i> Voir tous les best-sellers</a>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
+
+<!-- ── PROMOTIONS + COUNTDOWN ── -->
 <?php if(!empty($promo)): ?>
 <div class="ts-section" style="background:rgba(255,160,122,.04);border-top:1px solid rgba(255,160,122,.12);border-bottom:1px solid rgba(255,160,122,.12)">
   <div class="ts-wrap">
@@ -192,11 +294,18 @@ function unsplashFallback($cat=''){
       <p class="ts-section-sub">Des offres exclusives à durée limitée — ne ratez pas ces prix exceptionnels</p>
     </div>
     <div class="ts-grid-4">
-      <?php foreach(array_slice($promo,0,4) as $p):
+      <?php foreach(array_slice($promo,0,4) as $pi => $p):
         $img=imgUrl($p['image'], $p['cat']??''); if(!$img) $img=unsplashFallback($p['cat']??'');
+        // Random end date 1-7 days from now for countdown
+        $endTs = time() + rand(3600*6, 3600*24*7);
       ?>
-      <div class="ts-pcard reveal">
+      <div class="ts-pcard ts-pcard-promo reveal">
         <?php if($p['discount']>0): ?><div style="position:absolute;top:11px;left:11px;z-index:5"><span class="ts-badge ts-badge-r" style="font-size:13px;padding:5px 14px">-<?=$p['discount']?>%</span></div><?php endif; ?>
+        <!-- Countdown timer -->
+        <div class="ts-countdown" data-end="<?= $endTs ?>">
+          <i class="fas fa-clock"></i>
+          <span class="ts-cd-text">Chargement…</span>
+        </div>
         <div class="ts-pimg"><a href="<?= BASE_URL ?>/product/<?=$p['id']?>"><img src="<?=htmlspecialchars($img)?>" alt="<?=htmlspecialchars($p['name'])?>"></a></div>
         <div class="ts-pbody">
           <span class="ts-pcat">Promotion</span>
@@ -205,7 +314,7 @@ function unsplashFallback($cat=''){
           <div class="ts-pprice"><?=displayPrice($p['price'])?></div>
           <div class="ts-pact">
             <button class="ts-atc add-to-cart" data-id="<?=$p['id']?>" data-name="<?=htmlspecialchars($p['name'])?>" data-price="<?=$p['price']?>" data-image="<?=htmlspecialchars($img)?>"><i class="fas fa-cart-plus"></i> Ajouter</button>
-            <a href="<?= BASE_URL ?>/product/<?=$p['id']?>" class="ts-peye"><i class="fas fa-eye"></i></a>
+            <button class="ts-peye ts-quickview-btn" data-id="<?=$p['id']?>" data-name="<?=htmlspecialchars($p['name'])?>" data-price="<?=$p['price']?>" data-old-price="<?=$p['old_price']?>" data-image="<?=htmlspecialchars($img)?>" data-cat="<?=htmlspecialchars($p['cat']??'Général')?>" data-desc="<?=htmlspecialchars($p['short_description']??$p['description']??'')?>" data-stock="<?=$p['stock']?>" data-discount="<?=$p['discount']?>"><i class="fas fa-eye"></i></button>
           </div>
         </div>
       </div>

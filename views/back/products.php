@@ -95,7 +95,7 @@
                         <button type="submit" class="ts-btn ts-btn-primary">
                             <i class="fas fa-filter"></i> Filtrer
                         </button>
-                        <?php if (!empty($search) || !empty($selectedCategory) || $selectedStatus !== ''): ?>
+                        <?php if (!empty($search) || !empty($selectedCategory) || ($selectedStatus ?? '') !== ''): ?>
                         <a href="<?= BASE_URL ?>/admin/products" class="ts-btn ts-btn-secondary">
                             <i class="fas fa-times"></i> Réinitialiser
                         </a>
