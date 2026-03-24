@@ -1,8 +1,14 @@
-/* ================================================================
-   TECHSTORE FRONT — Design System Premium v2.0
-   Palette : Bleu Électrique #007bff / Gris Métallisé #333333 / Orange Vibrant #ffa07a
-   Police  : Times New Roman (serif classique-tech)
-   ================================================================ */
+/* 
+ * ==================================================================================
+ * TECHSTORE FRONT-OFFICE — Design System & Stylesheet
+ * ==================================================================================
+ * Auteur      : TechStore Team
+ * Version     : 2.1
+ * Description : Système de design global pour le front-office.
+ *               Utilise une palette premium (Bleu/Orange) et une typographie serif.
+ *               Basé sur des variables CSS pour une maintenance facilitée.
+ * ==================================================================================
+ */
 
 /* ═══════════════════════════════════ VARIABLES ═══════════════════════════════════ */
 :root {
@@ -152,7 +158,7 @@ img { max-width:100%; }
   background:rgba(10,10,20,.95); display:block;
 }
 
-/* ─── FOOTER ─── */
+/* ═══════════════════════════════════ FOOTER ═══════════════════════════════════ */
 .ts-footer {
   background:rgba(8,8,8,.99); border-top:2px solid rgba(0,123,255,.2);
   padding:60px 28px 28px; margin-top:80px; position:relative; z-index:1;
@@ -199,7 +205,7 @@ img { max-width:100%; }
 .ts-flash-err { background:rgba(255,160,122,.10); border-color:rgba(255,160,122,.28); color:var(--orange-d); }
 .ts-flash-inf { background:rgba(0,123,255,.10); border-color:rgba(0,123,255,.28); color:var(--blue-l); }
 
-/* ─── BOUTONS ─── */
+/* ═══════════════════════════════════ COMPOSANTS (BOUTONS) ═════════════════════ */
 .ts-btn {
   display:inline-flex; align-items:center; gap:8px; padding:12px 26px; border-radius:30px;
   font-family:var(--fn); font-size:14px; font-weight:700; letter-spacing:0.03em; cursor:pointer; border:none;
@@ -229,7 +235,7 @@ img { max-width:100%; }
 .ts-badge-y { background:rgba(255,193,7,.10);   color:#c47f00;          border-color:rgba(255,193,7,.22); }
 .ts-badge-m { background:rgba(51,51,51,.07);    color:var(--grey);      border-color:rgba(51,51,51,.18); }
 
-/* ─── FORMULAIRES ─── */
+/* ═══════════════════════════════════ FORMULAIRES ══════════════════════════════ */
 .ts-fgroup { margin-bottom:18px; }
 .ts-label { display:block; font-family:var(--fn); font-size:11px; font-weight:700; color:var(--blue-d); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:7px; }
 .ts-input, .ts-select, .ts-textarea {
@@ -318,7 +324,7 @@ img { max-width:100%; }
 .ts-pcard:hover .ts-pimg img { transform:scale(1.08); }
 .ts-pbody { padding:17px; }
 .ts-pcat  { font-family:var(--fn); font-size:10.5px; font-weight:700; color:var(--blue-d); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:7px; display:block; }
-.ts-pname { font-family:var(--fn-title); font-size:14.5px; font-weight:700; color:#1a1a1a; margin-bottom:8px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.ts-pname { font-family:var(--fn-title); font-size:14.5px; font-weight:700; color:#1a1a1a; margin-bottom:8px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-clamp:2; overflow:hidden; }
 .ts-pold  { font-family:var(--fn); font-size:12px; color:#999; text-decoration:line-through; margin-bottom:3px; }
 .ts-pprice { font-family:var(--fn-title); font-size:18px; font-weight:800; background:var(--g-orange); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .ts-pstock { display:inline-flex; align-items:center; gap:5px; font-family:var(--fn); font-size:12px; font-weight:500; margin:9px 0; }
@@ -799,7 +805,7 @@ img { max-width:100%; }
 /* ─── OVERRIDES ─── */
 body { display:block !important; }
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
-input[type=number]{-moz-appearance:textfield;}
+input[type=number]{-moz-appearance:textfield; appearance:textfield;}
 h1,h2,h3,h4,h5,h6 { font-family:var(--fn-title); line-height:1.2; color:#1a1a1a; }
 p { font-family:var(--fn); font-size:15px; line-height:1.72; color:rgba(51,51,51,.70); }
 .ts-pprice, .ts-pdprice, .ts-order-total-v, .ts-sum-total-v { font-family:var(--fn-title) !important; }
@@ -1153,7 +1159,7 @@ p { font-family:var(--fn); font-size:15px; line-height:1.72; color:rgba(51,51,51
 .ts-qv-desc {
   font-family:var(--fn); font-size:14px; color:rgba(51,51,51,.6);
   line-height:1.7; margin-bottom:16px;
-  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; line-clamp:3; overflow:hidden;
 }
 .ts-qv-qty { margin:12px 0 16px; }
 .ts-qv-actions { display:flex; gap:10px; }

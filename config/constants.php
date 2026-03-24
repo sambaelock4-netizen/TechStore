@@ -1,7 +1,13 @@
 <?php
 /**
- * TECHSTORE - Constants
- * Configuration des constantes de l'application
+ * ==================================================================================
+ * TECHSTORE — Configuration des Constantes Globales
+ * ==================================================================================
+ * Ce fichier centralise tous les paramètres de l'application :
+ * 1. Chemins d'accès (Système de fichiers et URLs).
+ * 2. Identifiants de l'API NotchPay (Sandbox/Production).
+ * 3. Paramètres de session et environnement.
+ * ==================================================================================
  */
 
 // URLs du site - Auto-detection pour acces local et IP

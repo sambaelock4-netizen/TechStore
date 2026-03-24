@@ -1,32 +1,64 @@
 <?php
 /**
- * TECHSTORE - Admin Dashboard
+ * ==================================================================================
+ * TechStore - Tableau de Bord Administration (Dashboard)
+ * ==================================================================================
+ * Ce fichier est le point d'entrée du back-office. Il présente :
+ * 1. Des indicateurs clés de performance (KPIs) : Produits, Commandes, Revenus.
+ * 2. Un graphique de tendance des ventes sur les 7 derniers jours.
+ * 3. Des alertes sur le stock (produits proches de la rupture).
+ * 4. Un aperçu des dernières commandes passées.
+ * 5. Des raccourcis vers les actions courantes de gestion.
+ * ==================================================================================
  */
+
+// Nom de l'administrateur pour la personnalisation
 $adminName = isset($_SESSION['user']['firstname']) ? $_SESSION['user']['firstname'] : 'Admin';
 
-// 1. KPIs (Global totals or current month)
+/**
+ * 1. RÉCUPÉRATION DES STATISTIQUES (KPIs)
+ * Calcul des totaux pour les cartes du haut.
+ */
+// Nombre total de produits actifs
 $s = $pdo->query("SELECT COUNT(*) FROM products WHERE is_active=1");
 $stats['total_products'] = $s->fetchColumn();
+
+// Nombre total de commandes non annulées
 $s = $pdo->query("SELECT COUNT(*) FROM orders WHERE status != 'annule'");
 $stats['total_orders'] = $s->fetchColumn();
+
+// Nombre de clients enregistrés
 $s = $pdo->query("SELECT COUNT(*) FROM users WHERE role='client'");
 $stats['total_users'] = $s->fetchColumn();
+
+// Chiffre d'affaires total (Somme des montants de commandes validées)
 $s = $pdo->query("SELECT SUM(total_amount) FROM orders WHERE status != 'annule'");
 $stats['total_revenue'] = $s->fetchColumn();
 
-// 2. Recent Orders (Last 8)
+/**
+ * 2. COMMANDES RÉCENTES
+ * Récupération des 8 dernières commandes avec informations clients.
+ */
 $s = $pdo->query("SELECT o.*, u.firstname, u.lastname FROM orders o JOIN users u ON o.user_id=u.id ORDER BY o.created_at DESC LIMIT 8");
 $recentOrders = $s->fetchAll();
 
-// 3. Low Stock Alerts (Stock <= 5)
+/**
+ * 3. ALERTES DE STOCK BAS
+ * Identifie les produits dont le stock est <= 5.
+ */
 $s = $pdo->query("SELECT id, name, stock, image FROM products WHERE stock <= 5 AND is_active=1 ORDER BY stock ASC LIMIT 5");
 $lowStock = $s->fetchAll();
 
-// 4. Sales Trend (Last 7 days)
+/**
+ * 4. TENDANCE DES VENTES (CHARTS)
+ * Prépare les données pour le graphique Chart.js (7 derniers jours).
+ */
 $trendLabels = []; $trendData = [];
 for($i=6; $i>=0; $i--){
   $d = date('Y-m-d', strtotime("-$i days"));
-  $trendLabels[] = date('d/m', strtotime($d));
+  $trendLabels[] = date('d/m', strtotime($d)); // Label formatté pour l'axe X
+  
+  // Somme des ventes pour ce jour spécifique
   $s = $pdo->prepare("SELECT SUM(total_amount) FROM orders WHERE DATE(created_at) = ? AND status != 'annule'");
   $s->execute([$d]);
   $trendData[] = (float)($s->fetchColumn() ?? 0);

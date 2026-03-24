@@ -1,7 +1,13 @@
 /**
- * TECHSTORE — Enhancements JS
- * 1) Countdown Timer  2) Search Autocomplete  3) Quick View Modal
- * 4) Back to Top      5) Fly-to-Cart Animation
+ * ==================================================================================
+ * TECHSTORE — Expérience Utilisateur Avancée (Enhancements)
+ * ==================================================================================
+ * Gère les fonctionnalités UX "Premium" :
+ * 1. Recherche temps réel avec autocomplétion (AJAX).
+ * 2. Quick View (Aperçu rapide des produits en modal).
+ * 3. Animations complexes (Fly-to-cart, Reveal au scroll).
+ * 4. Compte à rebours promotionnel (Countdown).
+ * ==================================================================================
  */
 
 (function(){

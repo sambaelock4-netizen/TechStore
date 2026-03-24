@@ -1,4 +1,13 @@
-# TechStore URL Rewriting
+# ==================================================================================
+# TECHSTORE — Configuration Serveur Apache (.htaccess)
+# ==================================================================================
+# Ce fichier gère :
+# 1. La réécriture d'URL pour le Front Controller (router.php).
+# 2. La redirection automatique vers index.php si nécessaire.
+# 3. La sécurité de base (interdiction du listage de répertoire).
+# ==================================================================================
+
+# Activation de la réécriture d'URL
 RewriteEngine On
 RewriteBase /TechStore/
 

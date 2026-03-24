@@ -1,6 +1,10 @@
--- =====================================================
--- TECHSTORE - Base de données pour vente d'équipements informatiques
--- =====================================================
+-- ==================================================================================
+-- TECHSTORE — Schéma de la Base de Données
+-- ==================================================================================
+-- Description : Création des tables, index et contraintes d'intégrité.
+-- Tables      : users, categories, products, orders, order_items, settings.
+-- Version     : 1.2
+-- ==================================================================================
 
 -- Créer la base de données
 CREATE DATABASE IF NOT EXISTS techstore CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

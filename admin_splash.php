@@ -1,6 +1,15 @@
 <?php
+/**
+ * ==================================================================================
+ * TechStore - Écran de Chargement Admin (Splash Screen)
+ * ==================================================================================
+ * Ce fichier affiche une animation de chargement immersive avant de rediriger 
+ * l'utilisateur vers le tableau de bord de l'administration.
+ * Il sert à "préparer" l'expérience utilisateur et à simuler un chargement système.
+ * ==================================================================================
+ */
 require_once 'config/constants.php';
-$delay = 3;
+$delay = 3; // Délai en secondes avant redirection
 $url   = BASE_URL . '/admin';
 ?>
 <!DOCTYPE html>

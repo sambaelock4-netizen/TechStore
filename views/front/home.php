@@ -1,11 +1,53 @@
 <?php
+/**
+ * ==================================================================================
+ * TechStore - Page d'Accueil (Home Page)
+ * ==================================================================================
+ * Cette page est la vitrine principale de la boutique. 
+ * Elle récupère et affiche dynamiquement :
+ * 1. Les promotions en cours
+ * 2. Les produits vedettes (featured)
+ * 3. Les catégories actives
+ * 4. Les meilleures ventes (basé sur order_items)
+ * 5. Les nouveautés (derniers ajoutés)
+ * 
+ * Elle contient également des fonctions utilitaires pour la gestion des images
+ * avec un fallback intelligent vers Unsplash par catégorie.
+ * ==================================================================================
+ */
+
+// Initialisation des variables de données
 $promo=[]; $featured=[]; $cats=[]; $bestsellers=[]; $newArrivals=[];
+
 try {
-  $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_promotion=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $promo=$s->fetchAll();
-  $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_featured=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $featured=$s->fetchAll();
-  if(count($featured)<4){ $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $featured=$s->fetchAll(); }
-  $s=$pdo->prepare("SELECT * FROM categories WHERE is_active=1 LIMIT 8"); $s->execute(); $cats=$s->fetchAll();
-  // Produits les plus achetés (best sellers)
+  /** 
+   * RÉCUPÉRATION DES DONNÉES
+   * Utilisation de requêtes préparées pour la performance et la sécurité.
+   */
+  
+  // 1. Produits en promotion
+  $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_promotion=1 ORDER BY p.created_at DESC LIMIT 8"); 
+  $s->execute(); 
+  $promo=$s->fetchAll();
+
+  // 2. Produits vedettes (Featured)
+  $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_featured=1 ORDER BY p.created_at DESC LIMIT 8"); 
+  $s->execute(); 
+  $featured=$s->fetchAll();
+
+  // Fallback si aucun produit vedette n'est marqué : prendre les derniers ajouts
+  if(count($featured)<4){ 
+      $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); 
+      $s->execute(); 
+      $featured=$s->fetchAll(); 
+  }
+
+  // 3. Catégories pour le ruban de navigation
+  $s=$pdo->prepare("SELECT * FROM categories WHERE is_active=1 LIMIT 8"); 
+  $s->execute(); 
+  $cats=$s->fetchAll();
+
+  // 4. Best Sellers (Produits les plus vendus calculés via GROUP BY et SUM)
   $s=$pdo->prepare("SELECT p.*, c.name cat, COALESCE(SUM(oi.quantity),0) as total_sold
     FROM products p
     LEFT JOIN categories c ON p.category_id=c.id
@@ -14,20 +56,47 @@ try {
     WHERE p.is_active=1
     GROUP BY p.id
     ORDER BY total_sold DESC, p.created_at DESC
-    LIMIT 8"); $s->execute(); $bestsellers=$s->fetchAll();
-  // Si pas assez de ventes, compléter avec les produits populaires
+    LIMIT 8"); 
+  $s->execute(); 
+  $bestsellers=$s->fetchAll();
+
+  // Fallback pour les best sellers si la table des commandes est vide
   if(count($bestsellers)<4){
-    $s=$pdo->prepare("SELECT p.*, c.name cat, 0 as total_sold FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $bestsellers=$s->fetchAll();
+    $s=$pdo->prepare("SELECT p.*, c.name cat, 0 as total_sold FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); 
+    $s->execute(); 
+    $bestsellers=$s->fetchAll();
   }
-  // Nouveautés
-  $s=$pdo->prepare("SELECT p.*, c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); $s->execute(); $newArrivals=$s->fetchAll();
-} catch(PDOException $e){ error_log($e->getMessage()); }
+
+  // 5. Nouveaux arrivages
+  $s=$pdo->prepare("SELECT p.*, c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8"); 
+  $s->execute(); 
+  $newArrivals=$s->fetchAll();
+
+} catch(PDOException $e){ 
+    error_log("Erreur Home Data : " . $e->getMessage()); 
+}
+
+/**
+ * GESTIONNAIRE D'IMAGES
+ * Retourne l'URL correcte de l'image du produit.
+ * 
+ * @param string $img Nom du fichier ou URL
+ * @param string $cat Nom de la catégorie pour le fallback
+ * @return string URL finale de l'image
+ */
 function imgUrl($img, $cat=''){
   if(empty($img)) return unsplashFallback($cat);
   if(strpos($img,'http')===0) return $img;
-  $path = UPLOAD_URL.'/'.$img;
-  return $path;
+  return UPLOAD_URL . '/' . $img;
 }
+
+/**
+ * FALLBACK INTELLIGENT (Unsplash)
+ * Fournit une image professionnelle cohérente avec la catégorie si l'image est manquante.
+ * 
+ * @param string $cat Nom de la catégorie
+ * @return string URL Unsplash correspondante
+ */
 function unsplashFallback($cat=''){
   $map = [
     'ordinateur'=>'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
@@ -39,8 +108,13 @@ function unsplashFallback($cat=''){
     'réseau'    =>'https://images.unsplash.com/photo-1606904825846-647eb07f5be2?auto=format&fit=crop&w=800&q=80',
     'accessoire'=>'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=800&q=80',
   ];
+  
   $cat = mb_strtolower($cat);
-  foreach($map as $k=>$url) if(stripos($cat,$k)!==false) return $url;
+  foreach($map as $k=>$url) {
+      if(stripos($cat, $k) !== false) return $url;
+  }
+  
+  // Par défaut, image tech générique
   return 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80';
 }
 ?>

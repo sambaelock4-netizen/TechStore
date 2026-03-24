@@ -1,13 +1,32 @@
 <?php
 /**
- * TECHSTORE - Admin Controller
- * Contrôleur pour la partie administration
+ * ==================================================================================
+ * TECHSTORE - Contrôleur d'Administration (AdminController)
+ * ==================================================================================
+ * Ce contrôleur gère l'ensemble des opérations du back-office :
+ * 1. Statistiques et Tableau de Bord (KPIs, revenus, tendances).
+ * 2. Gestion du Catalogue (Produits, Catégories, Stocks, Promotions).
+ * 3. Gestion des Commandes et Suivi des clients.
+ * 4. Administration des Utilisateurs et Profils.
+ * 
+ * Hérite de la classe Core\Controller pour le rendu et la sécurité.
+ * ==================================================================================
  */
 
 require_once APP_PATH . '/Core/Controller.php';
 
+/**
+ * Class AdminController
+ * Gère l'accès sécurisé et les actions administratives.
+ */
 class AdminController extends Controller {
     
+    /**
+     * Constructeur
+     * Initialise la connexion PDO et vérifie les droits d'administration.
+     * 
+     * @param PDO $pdo Instance de connexion à la base de données.
+     */
     public function __construct($pdo) {
         parent::__construct($pdo);
         $this->requireAdmin();

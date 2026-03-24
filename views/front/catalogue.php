@@ -1,17 +1,70 @@
 <?php
-$products=[];$categories=[];
-$q=isset($_GET['q'])?trim($_GET['q']):'';
-$cid=isset($_GET['category'])?(int)$_GET['category']:0;
-$promo=isset($_GET['promo'])&&$_GET['promo']=='1';
-try{
-  $s=$pdo->prepare("SELECT * FROM categories WHERE is_active=1 ORDER BY name");$s->execute();$categories=$s->fetchAll();
-  if(!empty($q)){$t='%'.$q.'%';$s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND (p.name LIKE ? OR p.description LIKE ?) ORDER BY p.created_at DESC");$s->execute([$t,$t]);}
-  elseif($cid>0){$s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.category_id=? ORDER BY p.created_at DESC");$s->execute([$cid]);}
-  elseif($promo){$s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_promotion=1 ORDER BY p.created_at DESC");$s->execute();}
-  else{$s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC");$s->execute();}
+/**
+ * ==================================================================================
+ * TechStore - Catalogue des Produits
+ * ==================================================================================
+ * Cette page affiche la liste complète des produits avec des fonctionnalités de :
+ * 1. Filtrage par catégorie, promotion ou recherche textuelle
+ * 2. Tri dynamique (Prix, Nom) via JavaScript
+ * 3. Commutateur de vue (Grille vs Liste)
+ * 4. Gestion responsive de l'affichage
+ * ==================================================================================
+ */
+
+// Initialisation des listes
+$products=[]; $categories=[];
+
+// Récupération des paramètres de filtrage depuis l'URL (GET)
+$q     = isset($_GET['q']) ? trim($_GET['q']) : '';
+$cid   = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+$promo = isset($_GET['promo']) && $_GET['promo'] == '1';
+
+try {
+  /**
+   * RÉCUPÉRATION DES CATÉGORIES
+   * Nécessaire pour afficher les onglets de filtrage en haut de page.
+   */
+  $s=$pdo->prepare("SELECT * FROM categories WHERE is_active=1 ORDER BY name");
+  $s->execute();
+  $categories=$s->fetchAll();
+
+  /**
+   * RÉCUPÉRATION DES PRODUITS (Triée par nouveauté)
+   * On adapte la requête SQL en fonction des filtres actifs (Recherche > Catégorie > Promo > Tout).
+   */
+  if(!empty($q)){
+      // Recherche textuelle (Nom ou Description)
+      $t='%'.$q.'%';
+      $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND (p.name LIKE ? OR p.description LIKE ?) ORDER BY p.created_at DESC");
+      $s->execute([$t,$t]);
+  } elseif($cid > 0) {
+      // Filtrage par catégorie ID
+      $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.category_id=? ORDER BY p.created_at DESC");
+      $s->execute([$cid]);
+  } elseif($promo) {
+      // Uniquement les produits en promotion
+      $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 AND p.is_promotion=1 ORDER BY p.created_at DESC");
+      $s->execute();
+  } else {
+      // Affichage par défaut (Tous les produits actifs)
+      $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1 ORDER BY p.created_at DESC");
+      $s->execute();
+  }
+  
   $products=$s->fetchAll();
-}catch(PDOException $e){error_log($e->getMessage());}
-function catImg($img){if(empty($img))return'';return strpos($img,'http')===0?$img:UPLOAD_URL.'/'.$img;}
+
+} catch(PDOException $e){ 
+    error_log("Erreur Catalogue Data : " . $e->getMessage()); 
+}
+
+/**
+ * GESTIONNAIRE D'IMAGES CATALOGUE
+ * Transforme le nom de fichier stocké en URL complète.
+ */
+function catImg($img){
+    if(empty($img)) return '';
+    return strpos($img,'http')===0 ? $img : UPLOAD_URL.'/'.$img;
+}
 ?>
 
 <div class="ts-cat-wrap">

@@ -1,6 +1,12 @@
 /**
- * TECHSTORE — JavaScript Global
- * Panier · Navbar · Toast
+ * ==================================================================================
+ * TECHSTORE — Script Principal (Main JS)
+ * ==================================================================================
+ * Gère les interactions fondamentales de l'interface :
+ * 1. Initialisation des composants UI (Carrousels, Toasts).
+ * 2. Gestion du menu mobile et des menus déroulants.
+ * 3. Logique de base du panier et des notifications.
+ * ==================================================================================
  */
 
 /* ── PANIER ── */

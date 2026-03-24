@@ -1,7 +1,20 @@
 <?php
 /**
- * TECHSTORE — Service NotchPay
- * Gestion des paiements via l'API NotchPay
+ * ==================================================================================
+ * TECHSTORE — Service d'Intégration NotchPay
+ * ==================================================================================
+ * Ce service gère les interactions avec l'API NotchPay pour :
+ * 1. L'initialisation des paiements en ligne (XAF).
+ * 2. La vérification du statut des transactions.
+ * 3. La gestion des communications cURL avec les headers de sécurité.
+ * 
+ * Configuré via les constantes NOTCHPAY_* définies dans constants.php.
+ * ==================================================================================
+ */
+
+/**
+ * Class NotchPay
+ * Encapsule la logique de paiement tiers.
  */
 class NotchPay {
 

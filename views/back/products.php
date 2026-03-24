@@ -1,6 +1,14 @@
 <?php
 /**
- * TECHSTORE - Gestion des Produits
+ * ==================================================================================
+ * TechStore - Gestion du Catalogue Produits (Administration)
+ * ==================================================================================
+ * Interface de type CRUD permettant aux administrateurs de :
+ * 1. Visualiser la liste complète des produits avec recherche et filtres.
+ * 2. Accéder aux formulaires d'ajout et de modification.
+ * 3. Activer/Désactiver des produits instantanément.
+ * 4. Surveiller l'état des stocks et des promotions en cours.
+ * ==================================================================================
  */
 ?>
 <!DOCTYPE html>

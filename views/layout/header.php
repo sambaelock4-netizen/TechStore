@@ -1,4 +1,16 @@
 <?php
+/**
+ * ==================================================================================
+ * TECHSTORE — Entête de Mise en Page (Header Layout)
+ * ==================================================================================
+ * Ce fichier définit la structure commune du haut de page :
+ * 1. Métadonnées HTML, inclusions CSS (style.css, FontAwesome).
+ * 2. Navigation principale (Desktop & Mobile).
+ * 3. Barre de recherche temps réel et menu utilisateur.
+ * 4. Gestion dynamique du panier (compteur).
+ * ==================================================================================
+ */
+
 $isLogged = isset($_SESSION['user']);
 $userName = $isLogged ? ($_SESSION['user']['firstname'] ?? 'Mon compte') : null;
 $isAdmin  = $isLogged && in_array($_SESSION['user']['role'] ?? '', ['admin','super_admin']);

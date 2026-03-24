@@ -1,23 +1,84 @@
 <?php
-$product=null;$similar_products=[];$category=null;
-if(isset($id)&&$id>0){
-  try{
+/**
+ * ==================================================================================
+ * TechStore - Détails du Produit (Product Detail Page)
+ * ==================================================================================
+ * Cette page affiche les informations complètes d'un produit spécifique :
+ * 1. Galerie d'images (Principale + Miniatures)
+ * 2. Prix et état du stock (Gestion dynamique des badges)
+ * 3. Description courte et complète via un système d'onglets
+ * 4. Liste de produits similaires basés sur la catégorie
+ * 5. Actions d'achat (Ajout au panier avec quantité)
+ * ==================================================================================
+ */
+
+$product=null; $similar_products=[]; $category=null;
+
+/**
+ * RÉCUPÉRATION DES DONNÉES DU PRODUIT
+ * L'ID est passé via le router ($id).
+ */
+if(isset($id) && $id > 0){
+  try {
+    // Récupération du produit et de sa catégorie associée
     $s=$pdo->prepare("SELECT p.*,c.name cat,c.id cid FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.id=? AND p.is_active=1");
-    $s->execute([$id]);$product=$s->fetch();
+    $s->execute([$id]);
+    $product=$s->fetch();
+    
     if($product){
       $title=$product['name'].' - TechStore';
+      
+      // Récupération des produits similaires (Même catégorie, excluant le produit actuel)
       $s=$pdo->prepare("SELECT p.*,c.name cat FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.category_id=? AND p.id!=? AND p.is_active=1 LIMIT 4");
-      $s->execute([$product['cid'],$product['id']]);$similar_products=$s->fetchAll();
-      if($product['cid']){$s=$pdo->prepare("SELECT * FROM categories WHERE id=?");$s->execute([$product['cid']]);$category=$s->fetch();}
+      $s->execute([$product['cid'], $product['id']]);
+      $similar_products=$s->fetchAll();
+      
+      // Infos catégorie pour le fil d'ariane (breadcrumb)
+      if($product['cid']){
+          $s=$pdo->prepare("SELECT * FROM categories WHERE id=?");
+          $s->execute([$product['cid']]);
+          $category=$s->fetch();
+      }
     }
-  }catch(PDOException $e){error_log($e->getMessage());}
+  } catch(PDOException $e){ 
+      error_log("Erreur Product Detail : " . $e->getMessage()); 
+  }
 }
-if(!$product){header('Location:'.BASE_URL.'/404');exit;}
+
+// Redirection 404 si le produit n'existe pas ou est inactif
+if(!$product){
+    header('Location:'.BASE_URL.'/404');
+    exit;
+}
+
+/**
+ * PRÉPARATION DE LA GALERIE D'IMAGES
+ * Combine l'image principale et les images additionnelles stockées en JSON.
+ */
 $imgs=[];
-if(!empty($product['images']))$imgs=json_decode($product['images'],true)?:[];
-if(!empty($product['image'])){$m=$product['image'];if(strpos($m,'http')!==0)$m=UPLOAD_URL.'/'.$m;array_unshift($imgs,$m);}
-if(empty($imgs))$imgs=['https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'];
-function gUrl($p){if(empty($p))return $p;return strpos($p,'http')===0?$p:UPLOAD_URL.'/'.$p;}
+if(!empty($product['images'])) {
+    $imgs = json_decode($product['images'], true) ?: [];
+}
+
+if(!empty($product['image'])){
+    $m = $product['image'];
+    // Formatage de l'URL si locale
+    if(strpos($m,'http')!==0) $m = UPLOAD_URL.'/'.$m;
+    array_unshift($imgs, $m); // L'image principale est mise en premier
+}
+
+// Fallback si aucune image
+if(empty($imgs)) {
+    $imgs = ['https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'];
+}
+
+/**
+ * Formateur d'URL pour les images de produits similaires
+ */
+function gUrl($p){
+    if(empty($p)) return $p;
+    return strpos($p,'http')===0 ? $p : UPLOAD_URL.'/'.$p;
+}
 ?>
 
 <div class="ts-pdwrap">

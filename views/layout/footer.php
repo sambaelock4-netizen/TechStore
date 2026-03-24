@@ -1,3 +1,16 @@
+<?php
+/**
+ * ==================================================================================
+ * TECHSTORE — Pied de Page (Footer Layout)
+ * ==================================================================================
+ * Ce fichier définit la structure commune du bas de page :
+ * 1. Liens de navigation secondaires (Catégories, Support, Légal).
+ * 2. Réseaux sociaux et moyens de paiement.
+ * 3. Inclusions JavaScript globales (Bootstrap, App Logic).
+ * 4. Scripts utilitaires (Animations Reveal, Fly-to-cart).
+ * ==================================================================================
+ */
+?>
 <footer class="ts-footer">
   <div class="ts-footer-grid">
     <div>

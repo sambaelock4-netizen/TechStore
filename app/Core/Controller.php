@@ -1,43 +1,69 @@
 <?php
 /**
- * TECHSTORE - Base Controller
- * Classe de base pour tous les contrôleurs
+ * ==================================================================================
+ * TechStore - Contrôleur de Base (Base Controller)
+ * ==================================================================================
+ * Cette classe sert d'ossature à tous les contrôleurs de l'application.
+ * Elle fournit des outils communs pour :
+ * 1. La gestion de la connexion à la base de données (PDO)
+ * 2. Le rendu des vues (avec ou sans layout)
+ * 3. La gestion des erreurs (404)
+ * 4. La redirection et la sécurité (vérification des privilèges admin)
+ * ==================================================================================
  */
 
 class Controller {
+    /** @var PDO Instance de connexion à la base de données */
     protected $pdo;
+    
+    /** @var string Chemin vers le dossier des vues */
     protected $viewPath;
     
+    /**
+     * Constructeur du contrôleur
+     * 
+     * @param PDO $pdo L'instance PDO injectée
+     */
     public function __construct($pdo) {
         $this->pdo = $pdo;
         $this->viewPath = VIEW_PATH;
     }
     
     /**
-     * Méthode pour render une vue
+     * Rendre une vue (View Engine simplifié)
+     * Cette méthode extrait les données et inclut le fichier PHP de la vue.
+     * 
+     * @param string $view Le chemin relatif du fichier (ex: '/front/home.php')
+     * @param array $data Tableau associatif de données passées à la vue
      */
     protected function render($view, $data = []) {
+        // Injection automatique de l'objet PDO dans les données de vue
         $data['pdo'] = $this->pdo;
-        extract($data);
-        $viewPath = $this->viewPath . $view;
         
-        if (file_exists($viewPath)) {
-            // Pour les vues admin, on ne inclut pas le layout
+        // Transforme les clés du tableau en variables (ex: $data['name'] -> $name)
+        extract($data);
+        
+        $viewFullFile = $this->viewPath . $view;
+        
+        if (file_exists($viewFullFile)) {
+            // LOGIQUE DE LAYOUT :
+            // Si la vue appartient à l'administration ('/back/'), on l'affiche brute
+            // Sinon (front-office), on l'entoure du Header et Footer communs
             if (strpos($view, '/back/') === 0) {
-                require_once $viewPath;
+                require_once $viewFullFile;
             } else {
-                // Pour les vues normales, on utilise le layout
                 require_once VIEW_PATH . '/layout/header.php';
-                require_once $viewPath;
+                require_once $viewFullFile;
                 require_once VIEW_PATH . '/layout/footer.php';
             }
         } else {
+            // Si le fichier de vue n'existe pas, on lance une erreur 404
             $this->notFound();
         }
     }
     
     /**
-     * Méthode pour afficher une erreur 404
+     * Envoie un header HTTP 404 et affiche la page d'erreur
      */
     protected function notFound() {
         header("HTTP/1.0 404 Not Found");
@@ -46,7 +72,9 @@ class Controller {
     }
     
     /**
-     * Méthode pour rediriger
+     * Redirige l'utilisateur vers une URL relative
+     * 
+     * @param string $url L'URL de destination (ex: '/home')
      */
     protected function redirect($url) {
         header('Location: ' . BASE_URL . $url);
@@ -54,7 +82,8 @@ class Controller {
     }
     
     /**
-     * Méthode pour vérifier si l'utilisateur est admin
+     * Middleware de sécurité simple pour l'accès administrateur.
+     * Si l'utilisateur n'est pas admin, il est renvoyé vers l'accueil.
      */
     protected function requireAdmin() {
         $userRole = $_SESSION['user']['role'] ?? '';
@@ -64,7 +93,9 @@ class Controller {
     }
     
     /**
-     * Méthode pour obtenir une instance PDO
+     * Getter pour l'instance PDO
+     * 
+     * @return PDO
      */
     protected function getPdo() {
         return $this->pdo;

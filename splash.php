@@ -1,6 +1,14 @@
 <?php
+/**
+ * ==================================================================================
+ * TechStore - Écran de Bienvenue (Splash Screen Client)
+ * ==================================================================================
+ * Premier contact visuel avec l'utilisateur. 
+ * Affiche une animation high-tech et redirige vers l'accueil du site après quelques secondes.
+ * ==================================================================================
+ */
 require_once 'config/constants.php';
-$delay = 3;
+$delay = 3; // Délai en secondes
 $url   = BASE_URL . '/home';
 ?>
 <!DOCTYPE html>

@@ -1,4 +1,9 @@
-# TechStore - Boutique en Ligne High-Tech
+# TECHSTORE — E-commerce Platform V2.1 Professional
+==================================================================
+
+## Description
+TechStore est une plateforme de vente en ligne d'équipements informatiques moderne, rapide et sécurisée.
+Ce projet a été entièrement documenté et optimisé pour une présentation professionnelle.
 
 ## Description
 

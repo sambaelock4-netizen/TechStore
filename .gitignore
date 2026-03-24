@@ -1,3 +1,13 @@
+# ==================================================================================
+# TECHSTORE — Configuration des Exclusions Git (.gitignore)
+# ==================================================================================
+# Fichiers et dossiers ignorés pour la propreté du dépôt :
+# 1. Dépendances et environnement.
+# 2. Fichiers spécifiques à l'IDE et à l'OS.
+# 3. Logs et fichiers temporaires.
+# 4. Uploads utilisateurs (sauf .gitkeep).
+# ==================================================================================
+
 # Dependencies
 /vendor/
 /node_modules/
